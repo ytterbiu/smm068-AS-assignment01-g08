@@ -4,7 +4,7 @@ Term 2 group project for Probability and Mathematical Statistics (50% of
 coursework grade - 10% of module).
 
 - Group 08 working directory
-- HTML report: Link TBI
+- HTML report: https://ytterbiu.github.io/smm068-AS-assignment01-g08/
 
 ## Structure
 

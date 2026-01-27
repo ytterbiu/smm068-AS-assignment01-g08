@@ -1,6 +1,6 @@
 ---
 title: "Computational Frameworks for Portfolio Construction and Risk Assessment"
-subtitle: "SMM068 Group Coursework 01 2025-26 - Group 08"
+subtitle: "SMM068 (2025-26) Group Coursework 01 - Group 08"
 author:
   - "Benjamin Evans"
   - "Basmah Khan"
