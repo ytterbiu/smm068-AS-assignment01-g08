@@ -1,0 +1,334 @@
+---
+title: "Computational Frameworks for Portfolio Construction and Risk Assessment"
+subtitle: "SMM068 Group Coursework 01 2025-26 - Group 08"
+author:
+  - "Benjamin Evans"
+  - "Basmah Khan"
+  - "Bong Su Kil"
+  - "Ardi Wira Sudarmo"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output:
+  bookdown::html_document2:
+    self_contained: true
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+    theme: flatly
+    highlight: tango
+    df_print: paged
+  # runtime: shiny
+  bookdown::pdf_document2:
+    includes:
+      in_header: preamble.tex
+    number_sections: true
+    toc: true
+    latex_engine: xelatex
+    citation_package: natbib
+    keep_tex: true
+# fontsize: 10pt
+bibliography: references.bib
+---
+
+```{=latex}
+\newpage
+```
+
+```{=html}
+<h1>Information</h1>
+
+This R Markdown document was created as part of a group assignment for SMM068 at Bayes Business School, City St George's, University of London in Term 2 2025-26.
+
+```
+
+```{r asthetic-header, include=FALSE, echo=FALSE}
+# ==============================================================================
+# SMM068 Financial Economics (Subject CM2)
+# Group Coursework 2025-26
+# Group:        Group 08
+# Authors (in alphabetical order):
+#   - Benjamin Evans
+#   - Basmah Khan
+#   - Bong Su Kil
+#   - Ardi Wira Sudarmo
+# Professor:    Dr. Iqbal Owadally
+# Institution:  Bayes Business School - City St George's, University of London
+# Date:         TBC
+# Description:  Term 2 group project for SMM068 Financial Economics
+# (50% of coursework grade - 10% of module grade). The R code below
+# has been exported directly from an R Markdown (.rmd) file.  Hence the knitr
+# settings.
+# Dependencies:
+#   - TBI
+# Acknowledgements
+#   - TBI
+# ==============================================================================
+
+```
+
+```{r setup-knitr, include=FALSE, echo=FALSE}
+#----------------------- Initial setup (knitr settings) -----------------------#
+dir.create("fig", showWarnings = FALSE)
+
+# Defaults common to all outputs
+knitr::opts_chunk$set(
+  echo     = TRUE,
+  message  = FALSE,
+  warning  = FALSE,
+  fig.align = "center",
+  out.width = "100%",
+  fig.path  = "fig/",
+  dpi       = 300
+)
+
+# Output-specific settings
+if (knitr::is_latex_output()) {
+  knitr::opts_chunk$set(
+    fig.width = 6,
+    fig.height = 4,
+    dev = "pdf",
+    fig.pos = "ht",
+    out.extra = ""
+  )
+} else {
+  knitr::opts_chunk$set(
+    fig.width = 6,
+    fig.height = 4,
+    dev = "svglite"  # or "png"
+  )
+}
+```
+
+```{r setup-qol, include=FALSE, echo=FALSE}
+#----------------------------- Clean environment ------------------------------#
+rm(list = ls()) # Remove all objects
+graphics.off() # Close all graphical devices
+cat("\014") # Clean console
+```
+
+```{r load-dependencies, include=FALSE, echo=FALSE}
+#------------------- Load dependencies / external libraries -------------------#
+library(quantmod)
+library(xts) # for downloading
+library(zoo) # for downloading
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+library(kableExtra)
+```
+
+```{r html-app, echo=FALSE, results='asis', eval=knitr::is_html_output(), purl=FALSE}
+#------------------------------ HTML link to app ------------------------------#
+library(htmltools)
+
+div(style = "background-color: #f8f9fa; padding: 20px; border: 1px solid #e9ecef; border-radius: 5px; text-align: center; margin-bottom: 30px;",
+  h3("Bonus Interactive Dashboard Available"),
+  p("This static report is accompanied by a live R Shiny dashboard allowing one to test different tickers, exclude specific outlier periods, and adjust bootstrap simulation parameters."),
+  a(href = "https://3enji.shinyapps.io/SMM047-202526-Group07-Dashboard/",
+    target = "_blank",
+    class = "btn btn-primary",
+    style = "background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;",
+    "Launch Interactive Dashboard")
+)
+```
+
+```{r custom-functions, include=FALSE, echo=FALSE}
+#---------------------------- Custom QOL functions ----------------------------#
+#####################################
+# function: banner comments (used to to section up code)
+# Usage: banner_comment("Element 1: data cleaning") -> then ctrl + v (or cmd+v)
+#####################################
+banner_comment <- function(text, width = 80, border = "#", fill = "-") {
+  txt <- paste0(" ", text, " ")
+  inner_width <- width - 2 * nchar(border)
+  banner_string <- ""
+
+  if (inner_width <= nchar(txt)) {
+    banner_string <- paste0(border, txt, border)
+  } else {
+    pad_total <- inner_width - nchar(txt)
+    pad_left <- pad_total %/% 2
+    pad_right <- pad_total - pad_left
+
+    banner_string <- paste0(
+      border,
+      strrep(fill, pad_left),
+      txt,
+      strrep(fill, pad_right),
+      border
+    )
+  }
+
+  cat(banner_string, "\n")
+  # copy banner to allow direct pasting (requires clipr)
+  clipr::write_clip(banner_string)
+  # avoid [1] when printing if want to manually copy
+  invisible(banner_string)
+}
+#####################################
+# function: format p-values for text
+# Usage (in-line): `r format_p_vals(ad_test_result$p.value)`
+# Usage (console): format_p_vals(ad_test_result$p.value)
+#####################################
+format_p_vals <- function(p) {
+  if (length(p) != 1L || is.na(p)) {
+    stop("Error! p must be a single non-missing value")
+  }
+  if (p > 1) {
+    stop("Error! Value greater than 1")
+  }
+  if (p < 0) {
+    stop("Error! Value less than 0")
+  }
+
+  if (p >= 0.01) {
+    paste0("= ", formatC(p, format = "f", digits = 2))
+  } else if (p >= 0.001) {
+    paste0("= ", formatC(p, format = "f", digits = 3))
+  } else {
+    "< 0.001"
+  }
+}
+#####################################
+# function: format confidence intervals for tables & text
+# Usage (in-line): `r format_interval(el2_ci_normal_95[1], el2_ci_normal_95[2])`
+# Usage (console): format_interval(el2_ci_normal_95[1], el2_ci_normal_95[2])
+#####################################
+format_interval <- function(lower, upper, digits=3) {
+  paste0("[",
+       formatC(lower, format = "f", digits = digits), ", ",
+       formatC(upper, format = "f", digits = digits),
+       "]")
+}
+```
+
+# Question 01
+
+# Question 02
+
+# Question 03
+
+```{=latex}
+\newpage
+```
+
+# Conclusions
+
+TBI
+
+<!-- ```{=html} -->
+<!-- # References -->
+<!-- <div id="refs"></div> -->
+<!-- ``` -->
+
+<!-- ```{=latex} -->
+<!-- \bibliography{references.bib} -->
+<!-- ``` -->
+
+```{=latex}
+\newpage
+\section*{Appendices}
+\addcontentsline{toc}{section}{Appendices}
+```
+
+# (APPENDIX) Appendices {-}
+
+# TBI
+
+# Supplemental methodology {#apd-supplementary-methods}
+
+# Reproducibility, accessibility & declarations (Gen-AI & word count)
+
+<!-- BE note: taken out as we are submitting R file separately -->
+<!-- Use: `knitr::purl("cs1-group07.rmd", documentation = 0)` to generate r file -->
+<!-- Use: `tools::showNonASCIIfile("cs1-group07.rmd")` to debug -->
+<!-- ## R Code Documentation -->
+<!-- ```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+``` -->
+
+## Reproducibility & accessibility
+
+An accessible HTML version of this report is available via a public GitHub page:
+
+- TBI
+
+This report was created in R Markdown. The source code is open source and is
+available via:
+
+- TBI
+
+Changes made to this document were tracked using Git and are also available via
+the same repository (link TBI!). Please note that this commit history reflects
+updates made to the project repository and is not a comprehensive timeline of
+all contributions by group members.
+
+## Generative AI Declaration
+
+Do we want to include this?
+
+<!--
+Generative AI (GenAI) tools were used throughout this project to assist with
+project planning, methodological validation, and debugging. In practice, these
+tools functioned as an additional technical team member, providing immediate
+feedback, troubleshooting code, and challenging statistical assumptions.
+
+### Tools Used
+
+Google Gemini 2.5 Pro (Deep Research), ChatGPT 5
+
+### Prompts used
+
+The GenAI tools were provided with the 'Coursework Group 7.pdf' and extracts
+from our R code.
+
+A non-exhaustive list of prompts used is shown below. We opted to include at
+least one example of each _type_ of prompt used, rather than a list of all
+prompts. For example, if we entered the prompts 'How can we put two ggplots side
+by side?' and 'How to remove grey background on a ggplot', we would include only
+the first of these in the list below, as both relate to plotting issues (& are
+similar to 'querying' with a traditional search engine).
+
+- "Can you help with outlining the steps for this project."
+- "...the top of both graphs in r are slightly different. (Pasting R code.) Can
+  this be fixed for the plot area?"
+- "Help phrasing this in a simple and accessible way - remove any jargon &
+  identify the key points"
+- "How can this error be tracked down in an rmd file? ! Text line contains an
+  invalid character. l.1 ^^@^^@..."
+- "Are there specific assumptions for the Kruskal-Wallis test regarding variance
+  and where is this explanation in Nonparametric Statistical Methods?"
+
+### Use of GenAI outputs & subsequent revisions
+
+The GenAI tools served as a "consultant" member of the group. Notably, the AI
+output:
+
+- Helped debug plotting issues.
+- Highlighted potential statistical pitfalls, such as the "ANOVA trap"
+  (normality violations) and the importance of ordering data cleansing steps
+  correctly.
+- Suggested appropriate non-parametric alternatives (Kruskal-Wallis,
+  Mann-Whitney U) when diagnostic plots revealed that parametric assumptions
+  were violated.
+- Recommended specific R packages (nortest, e1071) and functions (ad.test,
+  kruskal.test) best suited for each task.
+- Commented on the structure of R code snippets and the report structure.
+
+### Changes made:
+
+All AI suggestions were critically reviewed and debated by the group before
+implementation. For example:
+
+- While the AI suggested code for complex layouts, the specific aesthetic
+  choices and annotations were manually adjusted to ensure clarity.
+- Where the AI proposed specific interpretations, these were cross-referenced
+  with academic literature and statistics textbooks.
+- The final R code for implementation was written and debugged by the group with
+  AI snippets being treated as drafts rather than final solutions.
+
+While GenAI was treated as a collaborator, the final analysis, statistical
+interpretation, and the written content of this report were generated and
+verified by the (human) group members. -->
