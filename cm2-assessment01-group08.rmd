@@ -242,8 +242,16 @@ TBI
 
 # Asset risk theory
 
-```{r Q3, echo=knitr::is_html_output()}
+```{r Q3, echo=knitr::is_html_output(), results = 'hide'}
 # R code goes here
+set.seed(1234)
+n_sim <- 1e6
+
+Z <- rbinom(n_sim, size = 1, prob = 0.2)
+R2 <- rnorm(n_sim, mean = ifelse(Z==1, 0.3, 0.0), sd = 0.1)
+
+mean(R2)
+var(R2)
 ```
 
 Consider 2 assets with random returns. Asset 1 has a Normally distributed return
@@ -268,8 +276,10 @@ Where w.p. means "with probability".
 
 ## Calculate $\mathbb{E}R_{2}$ and $\mathrm{Var}R_{2}$. [5 marks]
 
-\begin{align*} \mathbb{E}[R_{2}] & = (0\times 0.8) + (0.3\times 0.2) \\ & =
-\underline{0.06} \end{align*}
+\begin{align*} 
+\mathbb{E}[R_{2}] & = (0\times 0.8) + (0.3\times 0.2) \\ 
+& = \underline{0.06} 
+\end{align*}
 
 Using law of total variance
 
@@ -280,14 +290,27 @@ X\mid Z =2 &\sim\mathcal{N}(\mu=0.3, \sigma^{2}=0.1^{2})  \;\text{w.p. } 0.2
 \end{cases}
 $$
 
-\begin{align*} \text{Var}(R_{2}) & = \mathbb{E}[\text{Var}(X\mid Z)]
-+\text{Var}(\mathbb{E}[X\mid Z]) \\ \\ \mathbb{E}[\text{Var}(X\mid Z)] & = p_{1}
-\sigma_{1}^{2} + p_{2} \sigma_{2}^{2} \\ & = (0.8)(0.1) + (0.2)(0.1) \\ & = 0.1
-\\ \text{Var}(\mathbb{E}[X\mid Z]) & = p(1-p)(\mu_{1}-\mu_{2})^{2} \\ & =
-(0.8)(0.2)(-0.3)^{2} \\ & = 0.0144 \\ \\ \to \text{Var}(R_{2}) & = 0.1 + 0.0144
-\\ & = \underline{0.1144} \end{align*}
+\begin{align*} 
+\text{Var}(R_{2}) & = \mathbb{E}[\text{Var}(X\mid Z)]
++\text{Var}(\mathbb{E}[X\mid Z]) \\ \\ 
+\mathbb{E}[\text{Var}(X\mid Z)] & = p_{1}
+\sigma_{1}^{2} + p_{2} \sigma_{2}^{2} \\ 
+& = (0.8)(0.1^2) + (0.2)(0.1^2) \\ 
+& = 0.01 \\ \text{Var}(\mathbb{E}[X\mid Z]) & = p(1-p)(\mu_{1}-\mu_{2})^{2} \\ 
+& = (0.8)(0.2)(-0.3)^{2} \\ 
+& = 0.0144 \\ \\ 
+\to \text{Var}(R_{2}) & = 0.01 + 0.0144
+\\ & = \underline{0.0244} 
+\end{align*}
 
 ## Use **R** to estimate $\mathbb{E}R_{2}$ and $\mathrm{Var}R_{2}$. [5 marks]
+
+Using simulated values of `r formatC(n_sim, format = "fg", digits = 3, big.mark = ",")`, mean value of 
+`r formatC(mean(R2), format = "fg", digits = 5, small.mark = " ", small.interval = 3L)` 
+and variance of
+`r formatC(var(R2), format = "fg", digits = 5, small.mark = " ", small.interval = 3L)`.
+
+
 
 ## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of
 
