@@ -15,7 +15,7 @@ output:
     toc_depth: 3
     number_sections: true
     code_folding: show
-    theme: flatly
+    theme: united
     highlight: tango
     df_print: paged
   # runtime: shiny
