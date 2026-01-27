@@ -55,7 +55,7 @@ jobs:
 
       - name: Render R Markdown (single file)
         env:
-          RMD_INPUT: cs1-group07.rmd     # ← your actual file name
+          RMD_INPUT: cm2-assessment01-group08.rmd     # ← remember to update file name
         shell: Rscript {0}
         run: |
           dir.create("site", showWarnings = FALSE)
