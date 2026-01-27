@@ -14,7 +14,7 @@ output:
     toc_float: true
     toc_depth: 3
     number_sections: true
-    code_folding: show
+    code_folding: hide
     theme: united
     highlight: tango
     df_print: paged
@@ -205,19 +205,117 @@ format_interval <- function(lower, upper, digits=3) {
 }
 ```
 
-# Question 01
+# Downloading the data
 
-# Question 02
+```{r Q1, echo=knitr::is_html_output()}
+# R code goes here
+```
 
-# Question 03
+Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
+
+- pdf : Explain precisely which information resource you used, provide a URL if
+  available, state the name and ticker code for the stocks, state the date
+  range, state which price label you used.
+- xlsx: The data should appear in worksheet “Q1” over 6 columns, the first
+  column being the date.
+- [Total: 5 marks (8.3%)]
+
+**Answer:**
+
+- Information resource used:
+- URL if available
+- Name and ticker code for stocks
+- Date range:
+- Price label used:
 
 ```{=latex}
 \newpage
 ```
 
-# Conclusions
+# Portfolio optimisation
 
 TBI
+
+```{=latex}
+\newpage
+```
+
+# Asset risk theory
+
+```{r Q3, echo=knitr::is_html_output()}
+# R code goes here
+```
+
+Consider 2 assets with random returns. Asset 1 has a Normally distributed return
+with mean 6% and variance 2.44%, i.e.
+
+$$
+R_{1} \sim \mathcal{N}(\mu=0.06, \sigma^{2}=0.0244)
+$$
+
+Asset 2 has a random return $R_{2}$ where
+
+$$
+R_{2}
+\sim
+\begin{cases}
+\mathcal{N}(\mu=0, \sigma^{2}=0.1^{2}) \quad &\text{w.p. } 0.8\\
+\mathcal{N}(\mu=0.3, \sigma^{2}=0.1^{2}) &\text{w.p. } 0.2
+\end{cases}
+$$
+
+Where w.p. means "with probability".
+
+## Calculate $\mathbb{E}R_{2}$ and $\mathrm{Var}R_{2}$. [5 marks]
+
+\begin{align*} \mathbb{E}[R_{2}] & = (0\times 0.8) + (0.3\times 0.2) \\ & =
+\underline{0.06} \end{align*}
+
+Using law of total variance
+
+$$
+R_{2} \sim \begin{cases}
+X\mid Z =1  &\sim \mathcal{N}(\mu=0, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
+X\mid Z =2 &\sim\mathcal{N}(\mu=0.3, \sigma^{2}=0.1^{2})  \;\text{w.p. } 0.2
+\end{cases}
+$$
+
+\begin{align*} \text{Var}(R_{2}) & = \mathbb{E}[\text{Var}(X\mid Z)]
++\text{Var}(\mathbb{E}[X\mid Z]) \\ \\ \mathbb{E}[\text{Var}(X\mid Z)] & = p_{1}
+\sigma_{1}^{2} + p_{2} \sigma_{2}^{2} \\ & = (0.8)(0.1) + (0.2)(0.1) \\ & = 0.1
+\\ \text{Var}(\mathbb{E}[X\mid Z]) & = p(1-p)(\mu_{1}-\mu_{2})^{2} \\ & =
+(0.8)(0.2)(-0.3)^{2} \\ & = 0.0144 \\ \\ \to \text{Var}(R_{2}) & = 0.1 + 0.0144
+\\ & = \underline{0.1144} \end{align*}
+
+## Use **R** to estimate $\mathbb{E}R_{2}$ and $\mathrm{Var}R_{2}$. [5 marks]
+
+## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of
+
+### 0%,
+
+### -10%. [2 marks]
+
+## Repeat part Q3c above for asset 2. [4 marks]
+
+## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes. [3 marks]
+
+## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes. [2 marks]
+
+## Based on your answers to parts Q3a–Q3f above, comment on the risk involved in asset 2, compared to asset 1. [4 marks]
+
+- pdf : Show all final numerical answers in **bold**. Include all working. Paste
+  the plots. Write your answer to part Q3g on no more than 5 lines.
+- R: Computations and plotting should be done in R (code chunk with heading
+  “Q3”).
+- [Total: 25 marks (41.7%)]
+
+```{=latex}
+\newpage
+```
+
+<!-- # Conclusions
+
+TBI -->
 
 <!-- ```{=html} -->
 <!-- # References -->
