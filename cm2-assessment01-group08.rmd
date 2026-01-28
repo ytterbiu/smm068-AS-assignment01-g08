@@ -208,7 +208,35 @@ format_interval <- function(lower, upper, digits=3) {
 # Downloading the data
 
 ```{r Q1, echo=knitr::is_html_output()}
+# ==============================================================================
+# Q1 5 Stocks in U.S market
+# ==============================================================================
+
 # R code goes here
+# Five insurance-related stocks are chosen 
+# The specific choice of stocks is flexible, as the primary objective
+
+stocks <- c("TRV","PGR","ALL","CB","AIG")
+start_date <- as.Date("2023-01-01")    # fix dates
+end_date <- as.Date("2025-12-31")
+getSymbols(stocks, src = "yahoo", from = start_date, to = end_date)
+
+# Q1-1 Adjusted close extract
+
+prices <- data.frame(
+  Date = index(Ad(TRV)),
+  TRV = coredata(Ad(TRV)),
+  PGR = coredata(Ad(PGR)),
+  ALL = coredata(Ad(ALL)),
+  CB  = coredata(Ad(CB)),
+  AIG = coredata(Ad(AIG))  
+)
+
+head(prices)
+tail(prices)
+
+write.csv(prices, "Q1.csv", row.names=FALSE)
+
 ```
 
 Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
@@ -222,11 +250,23 @@ Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
 
 **Answer:**
 
-- Information resource used:
-- URL if available
-- Name and ticker code for stocks
-- Date range:
-- Price label used:
+- **Information resource used:** Yahoo finance
+
+- **URL if available:** 
+ https://finance.yahoo.com
+
+- **Name and ticker code for stocks**
+  - TRV (The Travelers Companies, Inc.) 
+  - PGR (Progressive Corporation)  
+  - ALL (Allstate Corporation)  
+  - CB (Chubb Limited)  
+  - AIG (American International Group, Inc.) 
+
+- **Date range:**
+ 1 January 2023 – 31 December 2025
+
+- **Price label used:** 
+ Adjusted closing price
 
 ```{=latex}
 \newpage
