@@ -240,7 +240,7 @@ TBI
 \newpage
 ```
 
-# Asset risk theory
+# Asset risk theory {#qthree}
 
 ```{r Q3, echo=knitr::is_html_output(), results = 'hide'}
 # R code goes here
@@ -255,41 +255,42 @@ var(R2)
 ```
 
 Consider 2 assets with random returns. Asset 1 has a Normally distributed return
-with mean 6% and variance 2.44%, i.e.
+$R_{1}$ with mean 6% and variance 2.44% and asset 2 has a random return $R_{2}$
+given by,
 
 $$
-R_{1} \sim \mathcal{N}(\mu=0.06, \sigma^{2}=0.0244)
-$$
-
-Asset 2 has a random return $R_{2}$ where
-
-$$
+R_{1} \sim \mathcal{N}(\mu=0.06, \sigma^{2}=0.0244),
+\quad
 R_{2}
 \sim
 \begin{cases}
-\mathcal{N}(\mu=0, \sigma^{2}=0.1^{2}) \quad &\text{w.p. } 0.8\\
-\mathcal{N}(\mu=0.3, \sigma^{2}=0.1^{2}) &\text{w.p. } 0.2
+\mathcal{N}(\mu=0.0, \, \sigma^{2}=0.1^{2}) \quad &\text{w.p. } 0.8\\
+\mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) &\text{w.p. } 0.2
 \end{cases}
 $$
 
-Where w.p. means "with probability".
+where w.p. means "with probability".
 
-## Calculate $\mathbb{E}R_{2}$ and $\mathrm{Var}R_{2}$. [5 marks]
+## Calculate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. {#qthreePtA}
 
+_[5 marks]_
+
+<!-- prettier-ignore -->
 \begin{align*} 
 \mathbb{E}[R_{2}] & = (0\times 0.8) + (0.3\times 0.2) \\ 
-& = \underline{0.06} 
+& = \underline{\mathbf{0.06}} 
 \end{align*}
 
 Using law of total variance
 
 $$
 R_{2} \sim \begin{cases}
-X\mid Z =1  &\sim \mathcal{N}(\mu=0, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
-X\mid Z =2 &\sim\mathcal{N}(\mu=0.3, \sigma^{2}=0.1^{2})  \;\text{w.p. } 0.2
+X\mid Z =1 &\sim \mathcal{N}(\mu=0.0, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
+X\mid Z =2 &\sim \mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.2
 \end{cases}
 $$
 
+<!-- prettier-ignore -->
 \begin{align*} 
 \text{Var}(R_{2}) & = \mathbb{E}[\text{Var}(X\mid Z)]
 +\text{Var}(\mathbb{E}[X\mid Z]) \\ \\ 
@@ -300,31 +301,50 @@ $$
 & = (0.8)(0.2)(-0.3)^{2} \\ 
 & = 0.0144 \\ \\ 
 \to \text{Var}(R_{2}) & = 0.01 + 0.0144
-\\ & = \underline{0.0244} 
+\\ & = \underline{\mathbf{0.0244}}
 \end{align*}
 
-## Use **R** to estimate $\mathbb{E}R_{2}$ and $\mathrm{Var}R_{2}$. [5 marks]
+Answers: $\mathbb{E}[R_{2}]$ = **0.06**, $\text{Var}(R_{2})=$ **0.0244**
 
-Using simulated values of `r formatC(n_sim, format = "fg", digits = 3, big.mark = ",")`, mean value of 
-`r formatC(mean(R2), format = "fg", digits = 5, small.mark = " ", small.interval = 3L)` 
+## Use **R** to estimate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. {#qthreePtB}
+
+_[5 marks]_
+
+We simulated `r formatC(n_sim, format = "fg", digits = 3, big.mark = ",")`
+values of $R_{2}$. This resulted in a mean value of
+**`r formatC(mean(R2), format = "fg", digits = 5, small.mark = " ", small.interval = 3L)`**
 and variance of
-`r formatC(var(R2), format = "fg", digits = 5, small.mark = " ", small.interval = 3L)`.
+**`r formatC(var(R2), format = "fg", digits = 5, small.mark = " ", small.interval = 3L)`**.
 
+- BE note: include brief detail here about the R commands used `rbinom` and
+`rnorm`.
 
+As expected, these are very similar to the theoretical values of 0.06 and 0.0244
+calculated in \@ref(qthreePtA).
 
 ## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of
 
 ### 0%,
 
-### -10%. [2 marks]
+### -10%.
 
-## Repeat part Q3c above for asset 2. [4 marks]
+_[2 marks]_
 
-## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes. [3 marks]
+## Repeat part Q3c above for asset 2.
 
-## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes. [2 marks]
+_[4 marks]_
 
-## Based on your answers to parts Q3a–Q3f above, comment on the risk involved in asset 2, compared to asset 1. [4 marks]
+## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes.
+
+_[3 marks]_
+
+## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes.
+
+_[2 marks]_
+
+## Based on your answers to parts Q3a–Q3f above, comment on the risk involved in asset 2, compared to asset 1.
+
+_[4 marks]_
 
 - pdf : Show all final numerical answers in **bold**. Include all working. Paste
   the plots. Write your answer to part Q3g on no more than 5 lines.
