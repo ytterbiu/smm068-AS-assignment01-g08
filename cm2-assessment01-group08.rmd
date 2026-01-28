@@ -364,14 +364,161 @@ calculated in \@ref(qthreePtA).
 
 ## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of
 
+<!-- # ============================================================================== -->
+<!-- # Q3(C)  Calculate the shortfall probabilities for asset 1
+<!-- # ============================================================================== -->
+
+
+\begin{array}{ll}
+\hline
+\textbf{Quantity} & \textbf{Expression} \\
+\hline
+\text{Distribution of } R_1 
+& R_1 \sim \mathcal{N}(\mu = 0.06,\ \sigma^2 = 0.0244) \\[6pt]
+
+\text{Expected return} 
+& \mathbb{E}[R_1] = 0.06 \\[6pt]
+
+\text{Standard deviation} 
+& \sigma = \sqrt{0.0244} \approx 0.156205 \\[6pt]
+
+\text{Shortfall probability} 
+& \mathbb{P}(R_1 < L)
+= \displaystyle \int_{-\infty}^{L} f_{R_1}(x)\, \mathrm{d}x \\[6pt]
+
+\hline
+\end{array}
+
+```{r}
+prob_val1 <- pnorm(0, mean = 0.06, sd = 0.156205)
+prob_val2 <- pnorm(-0.1, mean = 0.06, sd = 0.156205)
+
+```
+
+<!-- # ============================================================================== -->
+<!-- # Q3(C)(i)  benchmark 0%
+<!-- # ============================================================================== -->
+
 ### 0%,
+ benchmark =0%
+
+\begin{aligned}
+\mathbb{P}[R_1 < 0] 
+&= \int_{-\infty}^{0} f_R(x)\mathrm{d}x \\
+&= \Phi\!\left( \frac{0 - 0.06}{0.156205} \right) \\
+&= \Phi\!\left(`r round((0-0.06)/0.156205,4)`\right) \\
+&=`r round(prob_val1,5)`
+\end{aligned}
+
+\[
+\begin{array}{ll}
+\hline
+\text{Answer} & \mathbf{`r round(100 * prob_val1, 3)`}\% \\
+\hline
+\end{array}
+\]
+
+<!-- # ============================================================================== -->
+<!-- # Q3(C)(ii)  benchmark -10%
+<!-- # ============================================================================== -->
 
 ### -10%.
+
+benchmark = -10%
+
+\begin{aligned}
+\mathbb{P}[R_1 < -0.1] 
+&= \int_{-\infty}^{-0.1} f_R(x)\mathrm{d}x \\
+&= \Phi\!\left( \frac{-0.1 - 0.06}{0.156205} \right) \\
+&= \Phi\!\left(`r round((-0.1-0.06)/0.156205,4)`\right)\\
+&=`r round(prob_val2,5)`
+\end{aligned}
+
+\[
+\begin{array}{ll}
+\hline
+\text{Answer} & \mathbf{`r round(100 * prob_val2, 3)`}\% \\
+\hline
+\end{array}
+\]
 
 _[2 marks]_
 
 ## Repeat part Q3c above for asset 2.
 
+<!-- # ============================================================================== -->
+<!-- # Q3(d)  Calculate the shortfall probabilities for asset 2
+<!-- # ============================================================================== -->
+
+
+\begin{array}{ll}
+\hline
+\textbf{Quantity} & \textbf{Expression} \\
+\hline
+\text{Distribution of }R_{2}  & \begin{cases}
+X\mid Z =1 &\sim \mathcal{N}(\mu=0.0, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
+X\mid Z =2 &\sim \mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.2
+\end{cases} \\[6pt]
+
+\text{Shortfall probability} 
+& \mathbb{P}(R_2 < L)
+= 0.8 \int_{-\infty}^{L} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x
++ 0.2 \int_{-\infty}^{L} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
+
+\hline
+\end{array}
+
+<!-- # ============================================================================== -->
+<!-- # Q3(d)(i)  benchmark 0%
+<!-- # ============================================================================== -->
+
+### 0%,
+ benchmark =0%
+
+\[
+\begin{aligned}
+\mathbb{P}[R_2 < 0] 
+&= 0.8 \int_{-\infty}^{0} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x
++ 0.2 \int_{-\infty}^{0} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
+&= 0.8 \times \Phi\!\left( \frac{0 - 0}{0.1} \right) + 0.2 \times \Phi\!\left( \frac{0 - 0.3}{0.1} \right) \\
+&= 0.8 \times \Phi\!\left(0\right) + 0.2 \times \Phi\!\left(-3\right) \\
+&=`r round(0.8*0.5+0.2*pnorm(-3),5)`\\
+\end{aligned}
+\]
+
+\[
+\begin{array}{ll}
+\hline
+\text{Answer} & \mathbf{`r 100*round(0.8*0.5+0.2*pnorm(-3),5)`}\% \\
+\hline
+\end{array}
+\]
+
+<!-- # ============================================================================== -->
+<!-- # Q3(d)(ii)  benchmark -10%
+<!-- # ============================================================================== -->
+
+### -10%,
+ benchmark =0%
+
+\[
+\begin{aligned}
+\mathbb{P}[R_2 < 0] 
+&= 0.8 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x
++ 0.2 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
+&= 0.8 \times \Phi\!\left( \frac{-0.1 - 0}{0.1} \right) + 0.2 \times \Phi\!\left( \frac{-0.1 - 0.3}{0.1} \right) \\
+&= 0.8 \times \Phi\!\left(-1\right) + 0.2 \times \Phi\!\left(-4\right) \\
+&=`r round(0.8*pnorm(-1)+0.2*pnorm(-4),5)`\\
+\end{aligned}
+\]
+
+\[
+\begin{array}{ll}
+\hline
+\text{Answer} & \mathbf{`r 100*round(0.8*pnorm(-1)+0.2*pnorm(-4),5)`}\% \\
+\hline
+\end{array}
+\]
 _[4 marks]_
 
 ## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes.
