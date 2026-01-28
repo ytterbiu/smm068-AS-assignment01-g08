@@ -1,4 +1,48 @@
+# Folders
+.vscode/*
+
+# user settings
+.*DS_Store/*
+.DS_Store
 .Rproj.user
-.Rhistory
+*.Rproj
+
+# file types
+*.pdf
+*.html
+*.csv
 .RData
-.Ruserdata
+.Rhistory
+*.tex
+*.aux
+*.log
+*.synctex*
+*.css
+*.xlsx
+*.doc*
+*.ppt*
+*.dfc*
+
+# files
+*.fdb_latexmk
+*.aux
+*.log
+*.synctex.gz
+*.bbl
+*.fls
+*.toc
+*.xdv
+*.blg
+
+peer-assessment/*
+
+# cached files
+/cs1-group07_cache/*
+251119-cs1-group07.rmd
+figure-testing.R
+appendix-figs-for-amogh.R
+c_nasdaq_code_for_gemini.r
+cs1-group07-submitted.r
+cs1-group07.rmd
+HSI20180101to20241231.csv
+dashboard/rsconnect/shinyapps.io/3enji/SMM047-202526-Group07-Dashboard.dcf
