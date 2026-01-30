@@ -6,6 +6,18 @@ coursework grade - 10% of module).
 - Group 08 working directory
 - HTML report: https://ytterbiu.github.io/smm068-AS-assignment01-g08/
 
+## Formatting guide
+
+Making notes here for collaboration using rmd format:
+
+- If using `align*` ensure that it isn't wrapped in math mode
+- Add `<!-- prettier-ignore -->` before `align*` environment
+- Avoid putting + or - at the start of a new line within an `align*` environment
+- Use `$$ (maths) $$` for display math mode for consistency, rather than
+  `\[ and \]`
+- This character `−` raises warning in X&#x018E;LaTeX, have replaced throughout
+  with `-`
+
 ## Structure
 
 To be inserted.

@@ -213,7 +213,7 @@ format_interval <- function(lower, upper, digits=3) {
 # ==============================================================================
 
 # R code goes here
-# Five insurance-related stocks are chosen 
+# Five insurance-related stocks are chosen
 # The specific choice of stocks is flexible, as the primary objective
 
 stocks <- c("TRV","PGR","ALL","CB","AIG")
@@ -229,7 +229,7 @@ prices <- data.frame(
   PGR = coredata(Ad(PGR)),
   ALL = coredata(Ad(ALL)),
   CB  = coredata(Ad(CB)),
-  AIG = coredata(Ad(AIG))  
+  AIG = coredata(Ad(AIG))
 )
 
 head(prices)
@@ -252,21 +252,18 @@ Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
 
 - **Information resource used:** Yahoo finance
 
-- **URL if available:** 
- https://finance.yahoo.com
+- **URL if available:** https://finance.yahoo.com
 
 - **Name and ticker code for stocks**
-  - TRV (The Travelers Companies, Inc.) 
-  - PGR (Progressive Corporation)  
-  - ALL (Allstate Corporation)  
-  - CB (Chubb Limited)  
-  - AIG (American International Group, Inc.) 
+  - TRV (The Travelers Companies, Inc.)
+  - PGR (Progressive Corporation)
+  - ALL (Allstate Corporation)
+  - CB (Chubb Limited)
+  - AIG (American International Group, Inc.)
 
-- **Date range:**
- 1 January 2023 – 31 December 2025
+- **Date range:** 1 January 2023 – 31 December 2025
 
-- **Price label used:** 
- Adjusted closing price
+- **Price label used:** Adjusted closing price
 
 ```{=latex}
 \newpage
@@ -357,7 +354,7 @@ and variance of
 **`r formatC(var(R2), format = "fg", digits = 5, small.mark = " ", small.interval = 3L)`**.
 
 - BE note: include brief detail here about the R commands used `rbinom` and
-`rnorm`.
+  `rnorm`.
 
 As expected, these are very similar to the theoretical values of 0.06 and 0.0244
 calculated in \@ref(qthreePtA).
@@ -370,25 +367,23 @@ calculated in \@ref(qthreePtA).
 
 _[2 marks]_
 
+$$
 \begin{array}{ll}
 \hline
 \textbf{Quantity} & \textbf{Expression} \\
 \hline
-\text{Distribution of } R_1 
+\text{Distribution of } R_1
 & R_1 \sim \mathcal{N}(\mu = 0.06,\ \sigma^2 = 0.0244) \\[6pt]
-
-\text{Expected return} 
+\text{Expected return}
 & \mathbb{E}[R_1] = 0.06 \\[6pt]
-
-\text{Standard deviation} 
+\text{Standard deviation}
 & \sigma = \sqrt{0.0244} \approx 0.156205 \\[6pt]
-
-\text{Shortfall probability} 
+\text{Shortfall probability}
 & \mathbb{P}(R_1 < L)
 = \displaystyle \int_{-\infty}^{L} f_{R_1}(x)\, \mathrm{d}x \\[6pt]
-
 \hline
 \end{array}
+$$
 
 ```{r}
 prob_val1 <- pnorm(0, mean = 0.06, sd = 0.156205)
@@ -401,22 +396,23 @@ prob_val2 <- pnorm(-0.1, mean = 0.06, sd = 0.156205)
 <!-- # ============================================================================== -->
 
 ### benchmark = 0%,
- 
-\begin{aligned}
+
+<!-- prettier-ignore -->
+\begin{align*} 
 \mathbb{P}[R_1 < 0] 
 &= \int_{-\infty}^{0} f_R(x)\mathrm{d}x \\
-&= \Phi\!\left( \frac{0 - 0.06}{0.156205} \right) \\
-&= \Phi\!\left(`r round((0-0.06)/0.156205,4)`\right) \\
-&=`r round(prob_val1,5)`
-\end{aligned}
+&= \Phi\;\left( \frac{0 - 0.06}{0.156205} \right) \\
+&= \Phi\;\left(`r round((0-0.06)/0.156205,4)`\right) \\
+&=`r sprintf("%.5f", prob_val1)`
+\end{align*}
 
-\[
-\begin{array}{ll}
-\hline
-\text{Answer} & \mathbf{`r round(100 * prob_val1, 3)`}\% \\
-\hline
-\end{array}
-\]
+<!-- \[ -->
+<!-- \begin{array}{ll} -->
+<!-- \hline -->
+<!-- \text{Answer} & \mathbf{`r round(100 * prob_val1, 3)`}\% \\ -->
+<!-- \hline -->
+<!-- \end{array} -->
+<!-- \] -->
 
 <!-- # ============================================================================== -->
 <!-- # Q3(C)(ii)  benchmark -10%
@@ -424,21 +420,22 @@ prob_val2 <- pnorm(-0.1, mean = 0.06, sd = 0.156205)
 
 ### benchmark = -10%.
 
-\begin{aligned}
-\mathbb{P}[R_1 < -0.1] 
-&= \int_{-\infty}^{-0.1} f_R(x)\mathrm{d}x \\
-&= \Phi\!\left( \frac{-0.1 - 0.06}{0.156205} \right) \\
-&= \Phi\!\left(`r round((-0.1-0.06)/0.156205,4)`\right)\\
-&=`r round(prob_val2,5)`
-\end{aligned}
+<!-- prettier-ignore -->
+\begin{align*} 
+  \mathbb{P}[R_1 < -0.1] 
+  &= \int_{-\infty}^{-0.1} f_R(x)\mathrm{d}x \\
+  &= \Phi\;\left( \frac{-0.1 - 0.06}{0.156205} \right) \\
+  &= \Phi\;\left(`r round((-0.1-0.06)/0.156205,4)`\right)\\
+  &=`r round(prob_val2,5)`
+\end{align*}
 
-\[
+$$
 \begin{array}{ll}
 \hline
 \text{Answer} & \mathbf{`r round(100 * prob_val2, 3)`}\% \\
 \hline
 \end{array}
-\]
+$$
 
 <!-- # ============================================================================== -->
 <!-- # Q3(d)  Calculate the shortfall probabilities for asset 2
@@ -448,6 +445,7 @@ prob_val2 <- pnorm(-0.1, mean = 0.06, sd = 0.156205)
 
 _[4 marks]_
 
+$$
 \begin{array}{ll}
 \hline
 \textbf{Quantity} & \textbf{Expression} \\
@@ -456,14 +454,13 @@ _[4 marks]_
 X\mid Z =1 &\sim \mathcal{N}(\mu=0.0, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
 X\mid Z =2 &\sim \mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.2
 \end{cases} \\[6pt]
-
-\text{Shortfall probability} 
+\text{Shortfall probability}
 & \mathbb{P}(R_2 < L)
 = 0.8 \int_{-\infty}^{L} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x
 + 0.2 \int_{-\infty}^{L} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
-
 \hline
 \end{array}
+$$
 
 <!-- # ============================================================================== -->
 <!-- # Q3(d)(i)  benchmark 0%
@@ -471,69 +468,73 @@ X\mid Z =2 &\sim \mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 
 
 ### benchmark = 0%,
 
-\[
-\begin{aligned}
-\mathbb{P}[R_2 < 0] 
-&= 0.8 \int_{-\infty}^{0} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x
-+ 0.2 \int_{-\infty}^{0} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
-&= 0.8 \times \Phi\!\left( \frac{0 - 0}{0.1} \right) + 0.2 \times \Phi\!\left( \frac{0 - 0.3}{0.1} \right) \\
-&= 0.8 \times \Phi\!\left(0\right) + 0.2 \times \Phi\!\left(-3\right) \\
-&=`r round(0.8*0.5+0.2*pnorm(-3),5)`\\
-\end{aligned}
-\]
+<!-- prettier-ignore -->
+\begin{align*} 
+  \mathbb{P}[R_2 < 0] 
+  &= 0.8 \int_{-\infty}^{0} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x + 
+    0.2 \int_{-\infty}^{0} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
+  &= 0.8 \times \Phi \; \left( \frac{0 - 0}{0.1} \right) + 
+    0.2 \times \Phi\;\left( \frac{0 - 0.3}{0.1} \right) \\
+    &= 0.8 \times \Phi\;\left(0\right) + 0.2 \times \Phi\;\left(-3\right) \\
+    &=`r round(0.8*0.5+0.2*pnorm(-3),5)` \\
+\end{align*}
 
-\[
+$$
 \begin{array}{ll}
 \hline
 \text{Answer} & \mathbf{`r 100*round(0.8*0.5+0.2*pnorm(-3),5)`}\% \\
 \hline
 \end{array}
-\]
+$$
 
 <!-- # ============================================================================== -->
 <!-- # Q3(d)(ii)  benchmark -10%
 <!-- # ============================================================================== -->
 
 ### benchmark = -10%,
- benchmark =-10%
 
-\[
-\begin{aligned}
-\mathbb{P}[R_2 < -0.1] 
-&= 0.8 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x
-+ 0.2 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
-&= 0.8 \times \Phi\!\left( \frac{-0.1 - 0}{0.1} \right) + 0.2 \times \Phi\!\left( \frac{-0.1 - 0.3}{0.1} \right) \\
-&= 0.8 \times \Phi\!\left(-1\right) + 0.2 \times \Phi\!\left(-4\right) \\
-&=`r round(0.8*pnorm(-1)+0.2*pnorm(-4),5)`\\
-\end{aligned}
-\]
+benchmark =-10%
 
-\[
+<!-- prettier-ignore -->
+\begin{align*} 
+  \mathbb{P}[R_2 < -0.1] 
+  &= 0.8 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x + 
+  0.2 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
+  &= 0.8 \times \Phi\;\left( \frac{-0.1 - 0}{0.1} \right) + 0.2 \times 
+    \Phi\;\left( \frac{-0.1 - 0.3}{0.1} \right) \\
+    &= 0.8 \times \Phi\;\left(-1\right) + 0.2 \times \Phi\;\left(-4\right) \\
+    &=`r round(0.8*pnorm(-1)+0.2*pnorm(-4),5)` \\
+\end{align*}
+
+$$
 \begin{array}{ll}
 \hline
 \text{Answer} & \mathbf{`r 100*round(0.8*pnorm(-1)+0.2*pnorm(-4),5)`}\% \\
 \hline
 \end{array}
-\]
-
+$$
 
 <!-- # ============================================================================== -->
 <!-- # Q3(e)  Plot pdfs of returns for assets 1 and 2 on the same axes
 <!-- # ============================================================================== -->
 
 ## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes.
+
 _[3 marks]_
 
-The plotting range $[-0.5, 0.6]$ was selected based on definite outlier. 
-For Asset1, $R_1 \sim \mathcal{N}(0.06, 0.0244)$ with standard deviation $\sigma_1 = \sqrt{0.0244} \approx 0.156205$, giving a three-sigma inverval of $0.06 \pm 3\times\sigma_1 \approx [-0.41, 0.53]$.
-For asset 2, the two normal components have means 0 and 0.3 with standard deviation 0.1, resulting in three-sigma intervals of $[-0.3, 0.3]$ and $[0.0, 0.6]$ , respectively.
-The selected range $[-0.5, 0.6]$ therefore covers approximately three standard deviations for both assets.
-
+The plotting range $[-0.5, 0.6]$ was selected based on definite outlier. For
+Asset1, $R_1 \sim \mathcal{N}(0.06, 0.0244)$ with standard deviation
+$\sigma_1 = \sqrt{0.0244} \approx 0.156205$, giving a three-sigma inverval of
+$0.06 \pm 3\times\sigma_1 \approx [-0.41, 0.53]$. For asset 2, the two normal
+components have means 0 and 0.3 with standard deviation 0.1, resulting in
+three-sigma intervals of $[-0.3, 0.3]$ and $[0.0, 0.6]$ , respectively. The
+selected range $[-0.5, 0.6]$ therefore covers approximately three standard
+deviations for both assets.
 
 ```{r}
 x <- seq(-0.5, 0.6, by = 0.001)
 R1_pdf <- dnorm(x, mean = 0.06, sd = sqrt(0.0244))
-R2_pdf <- 0.8 * dnorm(x, mean = 0, sd = 0.1) + 0.2 * dnorm(x, mean = 0.3, sd = 0.1) 
+R2_pdf <- 0.8 * dnorm(x, mean = 0, sd = 0.1) + 0.2 * dnorm(x, mean = 0.3, sd = 0.1)
 
 ymax <- max(R1_pdf, R2_pdf)
 plot(
@@ -566,7 +567,7 @@ plot(
   lwd = 2,
   col="green",
   xlab = "Return",
-  ylab = "PDF difference (R2 − R1)",
+  ylab = "PDF difference (R2 - R1)",
   main = "Difference between PDFs"
 )
 abline(h = 0, lty = 2)
@@ -574,19 +575,18 @@ grid()
 
 ```
 
-
-
 <!-- # ============================================================================== -->
 <!-- # Q3(f) plot the cdfs of returns for assets 1 and 2 on the same axes.
 <!-- # ============================================================================== -->
 
 ## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes.
+
 _[2 marks]_
 
 ```{r}
 
 R1_cdf <- pnorm(x, mean = 0.06, sd = sqrt(0.0244))
-R2_cdf <- 0.8 * pnorm(x, mean = 0, sd = 0.1) + 0.2 * pnorm(x, mean = 0.3, sd = 0.1) 
+R2_cdf <- 0.8 * pnorm(x, mean = 0, sd = 0.1) + 0.2 * pnorm(x, mean = 0.3, sd = 0.1)
 
 ymax_cdf <- max(R1_cdf, R2_cdf)
 plot(
@@ -619,7 +619,7 @@ plot(
   lwd = 2,
   col="green",
   xlab = "Return",
-  ylab = "CDF difference (R2 − R1)",
+  ylab = "CDF difference (R2 - R1)",
   main = "Difference between CDFs"
 )
 abline(h = 0, lty = 2)
@@ -627,16 +627,22 @@ grid()
 
 ```
 
-
-
 <!-- # ============================================================================== -->
 <!-- # Q3(g)  comment on the risk involved in asset 2, compared to asset 1
 <!-- # ============================================================================== -->
 
 ## Based on your answers to parts Q3a–Q3f above, comment on the risk involved in asset 2, compared to asset 1.
+
 _[4 marks]_
 
- Based on the results from $Q3(a)$ to $Q3(f)$, asset 2 appears to be riskier than asset1, even though their expected returns are similar. Asset 1 follows a single normal distribution, so its returns are more stable and predictable. In contrast, asset 2 is a mixture of two normal distributions, which adds more uncertainty. The shortfall probabilities also indicate that asset 2 has a higer of risk of extreme outliers. This can be seen in the PDF, where asset 2 shows a more irregular shape and heavier tails. The CDF also indicates that asset 2 has a higer of risk of extreme outcomes. 
+Based on the results from $Q3(a)$ to $Q3(f)$, asset 2 appears to be riskier than
+asset1, even though their expected returns are similar. Asset 1 follows a single
+normal distribution, so its returns are more stable and predictable. In
+contrast, asset 2 is a mixture of two normal distributions, which adds more
+uncertainty. The shortfall probabilities also indicate that asset 2 has a higer
+of risk of extreme outliers. This can be seen in the PDF, where asset 2 shows a
+more irregular shape and heavier tails. The CDF also indicates that asset 2 has
+a higer of risk of extreme outcomes.
 
 - pdf : Show all final numerical answers in **bold**. Include all working. Paste
   the plots. Write your answer to part Q3g on no more than 5 lines.
