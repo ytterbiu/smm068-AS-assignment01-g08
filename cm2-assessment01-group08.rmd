@@ -109,15 +109,20 @@ cat("\014") # Clean console
 
 ```{r load-dependencies, include=FALSE, echo=FALSE}
 #------------------- Load dependencies / external libraries -------------------#
-library(quantmod)
-library(xts) # for downloading
-library(zoo) # for downloading
+library(quantmod) # for downloading
 
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(patchwork)
-library(kableExtra)
+library(kableExtra) # for general tables
+library(DT) # for HTML interactive data tables
+library(ggplot2) # for plotting
+library(patchwork) # for combining multiple plots into one figure
+library(plotly) # for interactive html plots
+
+library(dplyr) # wrangle data for reporting
+library(tidyr) # reshape data for reporting
+
+# BE note: not sure if we will need xts or zoo, but have left in for now
+library(xts) # for downloading / financial data analysis (used in CS1)
+library(zoo) # for downloading / financial data analysis (used in CS1)
 ```
 
 ```{r html-app, echo=FALSE, results='asis', eval=knitr::is_html_output(), purl=FALSE}
@@ -207,7 +212,7 @@ format_interval <- function(lower, upper, digits=3) {
 
 # Downloading the data
 
-```{r Q1, echo=knitr::is_html_output()}
+```{r Q1, echo=knitr::is_html_output(), include=FALSE}
 # ==============================================================================
 # Q1 5 Stocks in U.S market
 # ==============================================================================
@@ -216,27 +221,48 @@ format_interval <- function(lower, upper, digits=3) {
 # Five insurance-related stocks are chosen
 # The specific choice of stocks is flexible, as the primary objective
 
-stocks <- c("TRV","PGR","ALL","CB","AIG")
-start_date <- as.Date("2023-01-01")    # fix dates
+stocks <- sort(c("TRV", "PGR", "ALL", "CB", "AIG"))
+start_date <- as.Date("2023-01-01")
 end_date <- as.Date("2025-12-31")
-getSymbols(stocks, src = "yahoo", from = start_date, to = end_date)
+
+cache_file <- paste0("cache_", paste(stocks, collapse = "_"), ".rds")
+
+# Download only if file doesn't exist (avoiding throttling by Yahoo Finance).
+# Without this code the stocks data are downloaded fresh every time wecompile
+# the document (because we are using RMarkdown)
+if (file.exists(cache_file)) {
+  message("Loading from RDS cache...")
+  prices <- readRDS(cache_file)
+} else {
+  message("Cache not found. Downloading from Yahoo Finance...")
+
+  data_env <- new.env()
+  getSymbols(
+    stocks,
+    src = "yahoo",
+    from = start_date,
+    to = end_date,
+    env = data_env
+  )
+
+  # Get Adjusted Prices and merge dynamically (allows for more stocks)
+  price_list <- lapply(data_env, Ad)
+  prices_xts <- do.call(merge, price_list)
+
+  prices <- data.frame(Date = index(prices_xts), coredata(prices_xts))
+  # Ensure names match sorted list
+  colnames(prices) <- c("Date", stocks)
+
+  # Save to RDS (preserves datatypes)
+  saveRDS(prices, cache_file)
+}
 
 # Q1-1 Adjusted close extract
-
-prices <- data.frame(
-  Date = index(Ad(TRV)),
-  TRV = coredata(Ad(TRV)),
-  PGR = coredata(Ad(PGR)),
-  ALL = coredata(Ad(ALL)),
-  CB  = coredata(Ad(CB)),
-  AIG = coredata(Ad(AIG))
-)
 
 head(prices)
 tail(prices)
 
-write.csv(prices, "Q1.csv", row.names=FALSE)
-
+write.csv(prices, "Q1.csv", row.names = FALSE)
 ```
 
 Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
@@ -264,6 +290,92 @@ Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
 - **Date range:** 1 January 2023 – 31 December 2025
 
 - **Price label used:** Adjusted closing price
+
+```{r Q1-table-for-html, include=knitr::is_html_output(), echo=FALSE, message=FALSE, warning=FALSE}
+if (knitr::is_html_output()) {
+  datatable(
+    prices,
+    options = list(
+      pageLength = 10,
+      searching = TRUE,
+      ordering = TRUE,
+      autoWidth = TRUE,
+      columnDefs = list(list(className = 'dt-center', targets = "_all"))
+    ),
+    caption = "Chosen insurance stock prices (Adjusted Close)",
+    rownames = FALSE
+  ) %>%
+    # These are US stocks -> add USD currency format
+    formatCurrency(columns = stocks, currency = "$") %>%
+    formatStyle(
+      'Date',
+      target = 'row'
+      # fontWeight = styleRow(1:10, "bold"),
+    )
+}
+```
+
+```{r Q1-stock-price-plot, eval = TRUE, echo = FALSE, fig.width=8, fig.height=5, fig.cap = "Adjusted daily closing prices for selected stocks (2023–2025).", fig.pos='!ht'}
+# Transform to long format for ggplot
+df_long <- prices %>%
+  pivot_longer(
+    cols = -Date,
+    names_to = "Ticker",
+    values_to = "Price"
+  ) %>%
+  mutate(Date = as.Date(Date))
+
+# theme elements
+base_theme <- theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(10, 10, 10, 10)
+  )
+
+pal <- RColorBrewer::brewer.pal(8, "Dark2")
+my_cols <- setNames(pal[c(1, 2, 3, 5, 4)], sort(unique(df_long$Ticker)))
+
+# plot
+p <- ggplot(df_long, aes(x = Date, y = Price, color = Ticker)) +
+  geom_line(linewidth = 0.8, alpha = 0.9) +
+  scale_color_manual(values = my_cols) +
+  labs(
+    title = "Performance of selected stocks over 3 years selected here...",
+    subtitle = paste(
+      "Adjusted closing prices:",
+      min(df_long$Date),
+      "to",
+      max(df_long$Date)
+    ),
+    x = "Date",
+    y = "Adjusted Close (USD)",
+    color = "Stock:"
+  ) +
+  scale_x_date(date_labels = "%b %Y", date_breaks = "6 months") +
+  base_theme
+
+if (knitr::is_html_output()) {
+  # ggplotly(p)
+  p_html <- p + geom_line(linewidth = 0.5, alpha = 0.9)
+  ggplotly(p_html, height = 420) %>%
+    layout(
+      title = list(x = 0.5, xanchor = "center"),
+      legend = list(
+        orientation = "h",
+        x = 0.5,
+        xanchor = "center",
+        y = -0.2,
+        yanchor = "top"
+      ),
+      margin = list(t = 70, b = 90, l = 70, r = 20)
+    ) %>%
+    config(responsive = TRUE)
+} else {
+  p
+}
+```
 
 ```{=latex}
 \newpage
