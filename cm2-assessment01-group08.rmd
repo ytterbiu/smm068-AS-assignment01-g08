@@ -10,6 +10,7 @@ date: "`r format(Sys.Date(), '%d %B %Y')`"
 output:
   bookdown::html_document2:
     self_contained: true
+    css: style.css
     toc: true
     toc_float: true
     toc_depth: 3
@@ -22,6 +23,8 @@ output:
   bookdown::pdf_document2:
     includes:
       in_header: preamble.tex
+    pandoc_args:
+      - "--lua-filter=answer.lua"
     number_sections: true
     toc: true
     latex_engine: xelatex
@@ -208,6 +211,34 @@ format_interval <- function(lower, upper, digits=3) {
        formatC(upper, format = "f", digits = digits),
        "]")
 }
+#####################################
+# function: format truncated ellipses
+# Usage (in-line): `r tbi`
+# Usage (console): tbi
+#####################################
+fmt_trunc_ellip <- function(
+  x,
+  digits = 7,
+  ellip = "...",
+  tol = 1e-12,
+  trim_zeros_if_exact = TRUE
+) {
+  out <- rep(NA_character_, length(x))
+  ok <- is.finite(x)
+  scale <- 10^digits
+  xt <- trunc(x[ok] * scale) / scale
+  s <- formatC(xt, format = "f", digits = digits)
+  add <- abs(x[ok] - xt) > tol * pmax(1, abs(x[ok]))
+  if (trim_zeros_if_exact) {
+    s_trim <- sub("0+$", "", s) # drop trailing zeros
+    s_trim <- sub("\\.$", "", s_trim) # drop trailing decimal point
+  } else {
+    s_trim <- s
+  }
+  out[ok] <- ifelse(add, paste0(s, ellip), s_trim)
+  out[is.na(x)] <- NA_character_
+  out
+}
 ```
 
 # Downloading the data
@@ -385,13 +416,51 @@ if (knitr::is_html_output()) {
 
 TBI
 
+- Testing
+
+$$
+1 + 1 =2
+$$
+
+<!-- prettier-ignore -->
+::: {.answer-wrapper}
+::: {.answer}
+Answer: 10.3282 or `r round(100 * 0.32801, 3)`%
+:::
+:::
+
 ```{=latex}
 \newpage
 ```
 
 # Asset risk theory {#qthree}
 
-```{r Q3, echo=knitr::is_html_output(), results = 'hide'}
+```{r Q3-working}
+r1_mu <- 0.06
+r1_sd <- sqrt(0.0244)
+
+r2_p1 <- 0.8
+r2_p2 <- 0.2
+r2_mu1 <- 0.0
+r2_mu2 <- 0.3
+r2_sd1 <- 0.1
+r2_sd2 <- 0.1
+
+# Derived values for the working steps
+r2_mu_bar <- (r2_p1 * r2_mu1) + (r2_p2 * r2_mu2)
+
+q3a_ev_step1 <- r2_p1 * (r2_sd1^2)
+q3a_ev_step2 <- r2_p2 * (r2_sd2^2)
+q3a_ev_total <- q3a_ev_step1 + q3a_ev_step2
+
+q3a_ve_step1 <- r2_p1 * (r2_mu1 - r2_mu_bar)^2
+q3a_ve_step2 <- r2_p2 * (r2_mu2 - r2_mu_bar)^2
+q3a_ve_total <- q3a_ve_step1 + q3a_ve_step2
+
+r2_var <- q3a_ev_total + q3a_ve_total
+```
+
+```{r Q3b, echo=knitr::is_html_output(), results = 'hide'}
 # R code goes here
 set.seed(1234)
 n_sim <- 1e6
@@ -405,7 +474,7 @@ var(R2)
 
 Consider 2 assets with random returns. Asset 1 has a Normally distributed return
 $R_{1}$ with mean 6% and variance 2.44% and asset 2 has a random return $R_{2}$
-given by,
+(where w.p. means "with probability").
 
 $$
 R_{1} \sim \mathcal{N}(\mu=0.06, \sigma^{2}=0.0244),
@@ -418,42 +487,52 @@ R_{2}
 \end{cases}
 $$
 
-where w.p. means "with probability".
+## Calculate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. _[5 marks]_ {#qthreePtA}
 
-## Calculate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. {#qthreePtA}
-
-_[5 marks]_
+$$
+\begin{array}{ll}
+\hline
+\textbf{Quantity} & \textbf{Expression} \\
+\hline
+\text{Distribution of }R_{2}  &
+  \begin{cases}
+  X\mid Z =1 &\sim \mathcal{N}(\mu=0.0, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
+  X\mid Z =2 &\sim \mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.2\\[2pt]
+  \end{cases} \\[8pt]
+  \hline
+\text{Expectation}
+  & \mathbb{E}[R_{2}] = \sum_{z=1}^2 \mathbb{P}(Z=z) \times \mu_z \\[6pt]
+\text{Law of total variance}
+  & \text{Var}(R_{2}) = \mathbb{E}\big[\text{Var}(X\mid Z)\big] +
+  \text{Var}\big(\mathbb{E}[X\mid Z]\big) \\[6pt]
+\text{Expectation of variance}
+  & \mathbb{E}\big[\text{Var}(X\mid Z)\big] =
+  \sum_{z=1}^2 \mathbb{P}(Z=z) \times \sigma_z^2  \\[6pt]
+\text{Variance of expectation}
+  & \text{Var}\big(\mathbb{E}[X\mid Z]\big) =
+  \sum_{z=1}^2 \mathbb{P}(Z=z) \times \left(\mu_z - \mathbb{E}[R_{2}]\right)^2 \\[6pt]
+\hline
+\end{array}
+$$
 
 <!-- prettier-ignore -->
 \begin{align*} 
-\mathbb{E}[R_{2}] & = (0\times 0.8) + (0.3\times 0.2) \\ 
-& = \underline{\mathbf{0.06}} 
+\mathbb{E}[R_{2}] & = (`r r2_mu1` \times `r r2_p1`) + (`r r2_mu2` \times `r r2_p2`) = `r fmt_trunc_ellip(r2_mu_bar)` \\ 
+\mathbb{E}[\text{Var}(X\mid Z)] 
+  & = p_{1} \sigma_{1}^{2} + p_{2} \sigma_{2}^{2} \\ 
+  & = (`r r2_p1`)(`r r2_sd1`^2) + (`r r2_p2`)(`r r2_sd2`^2) = `r q3a_ev_total` \\ 
+\text{Var}(\mathbb{E}[X\mid Z]) 
+  & = (`r r2_p1` \times (`r r2_mu1` - `r r2_mu_bar`)^2) + (`r r2_p2` \times (`r r2_mu2` - `r r2_mu_bar`)^2) \\
+  & = `r fmt_trunc_ellip(q3a_ve_step1)` + `r fmt_trunc_ellip(q3a_ve_step2)` = `r fmt_trunc_ellip(q3a_ve_total)` \\
+\text{Var}(R_{2}) & = `r q3a_ev_total` + `r q3a_ve_total` = `r r2_var`
 \end{align*}
-
-Using law of total variance
-
-$$
-R_{2} \sim \begin{cases}
-X\mid Z =1 &\sim \mathcal{N}(\mu=0.0, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
-X\mid Z =2 &\sim \mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.2
-\end{cases}
-$$
 
 <!-- prettier-ignore -->
-\begin{align*} 
-\text{Var}(R_{2}) & = \mathbb{E}[\text{Var}(X\mid Z)]
-+\text{Var}(\mathbb{E}[X\mid Z]) \\ \\ 
-\mathbb{E}[\text{Var}(X\mid Z)] & = p_{1}
-\sigma_{1}^{2} + p_{2} \sigma_{2}^{2} \\ 
-& = (0.8)(0.1^2) + (0.2)(0.1^2) \\ 
-& = 0.01 \\ \text{Var}(\mathbb{E}[X\mid Z]) & = p(1-p)(\mu_{1}-\mu_{2})^{2} \\ 
-& = (0.8)(0.2)(-0.3)^{2} \\ 
-& = 0.0144 \\ \\ 
-\to \text{Var}(R_{2}) & = 0.01 + 0.0144
-\\ & = \underline{\mathbf{0.0244}}
-\end{align*}
-
-Answers: $\mathbb{E}[R_{2}]$ = **0.06**, $\text{Var}(R_{2})=$ **0.0244**
+::: {.answer-wrapper} 
+::: {.answer} 
+Answers: $\mathbb{E}[R_{2}] =$ `r fmt_trunc_ellip(r2_mu_bar)`, $\text{Var}(R_{2})=$ `r fmt_trunc_ellip(r2_var)`
+::: 
+:::
 
 ## Use **R** to estimate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. {#qthreePtB}
 
@@ -471,9 +550,9 @@ and variance of
 As expected, these are very similar to the theoretical values of 0.06 and 0.0244
 calculated in \@ref(qthreePtA).
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(C)  Calculate the shortfall probabilities for asset 1
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of
 
@@ -491,21 +570,32 @@ $$
 \text{Standard deviation}
 & \sigma = \sqrt{0.0244} \approx 0.156205 \\[6pt]
 \text{Shortfall probability}
-& \mathbb{P}(R_1 < L)
-= \displaystyle \int_{-\infty}^{L} f_{R_1}(x)\, \mathrm{d}x \\[6pt]
+& \mathbb{P}[R_1 < L]
+= \int_{-\infty}^{L} f_{R_1}(x)\, \mathrm{d}x \\[6pt]
 \hline
 \end{array}
 $$
 
-```{r}
-prob_val1 <- pnorm(0, mean = 0.06, sd = 0.156205)
-prob_val2 <- pnorm(-0.1, mean = 0.06, sd = 0.156205)
+```{r Q3c, echo=FALSE}
+thresholds <- c(T1 = 0, T2 = -0.1)
+w <- c(r2_p1, r2_p2)
+means <- c(r2_mu1, r2_mu2)
+sds <- c(r2_sd1, r2_sd2)
 
+# calc shortfall prob for R2
+calc_shortfall_r2 <- function(L) {
+  probs <- pnorm(L, mean = means, sd = sds)
+  sum(w * probs)
+}
+
+# apply to both thresholds
+results_r1 <- pnorm(thresholds, mean = r1_mu, sd = r1_sd)
+results_r2 <- sapply(thresholds, calc_shortfall_r2)
 ```
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(C)(i)  benchmark 0%
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ### benchmark = 0%,
 
@@ -513,22 +603,21 @@ prob_val2 <- pnorm(-0.1, mean = 0.06, sd = 0.156205)
 \begin{align*} 
 \mathbb{P}[R_1 < 0] 
 &= \int_{-\infty}^{0} f_R(x)\mathrm{d}x \\
-&= \Phi\;\left( \frac{0 - 0.06}{0.156205} \right) \\
-&= \Phi\;\left(`r round((0-0.06)/0.156205,4)`\right) \\
-&=`r sprintf("%.5f", prob_val1)`
+&= \Phi\left( \frac{0 - 0.06}{0.156205} \right) \\
+&= \Phi\left(`r round((0-0.06)/0.156205,4)`\right) \\
+&= `r fmt_trunc_ellip(results_r1["T1"])` 
 \end{align*}
 
-<!-- \[ -->
-<!-- \begin{array}{ll} -->
-<!-- \hline -->
-<!-- \text{Answer} & \mathbf{`r round(100 * prob_val1, 3)`}\% \\ -->
-<!-- \hline -->
-<!-- \end{array} -->
-<!-- \] -->
+<!-- prettier-ignore -->
+::: {.answer-wrapper}
+::: {.answer}
+Answer: `r sprintf("%.3f", results_r1["T1"]*100)`% (3dp)
+:::
+:::
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(C)(ii)  benchmark -10%
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ### benchmark = -10%.
 
@@ -536,22 +625,21 @@ prob_val2 <- pnorm(-0.1, mean = 0.06, sd = 0.156205)
 \begin{align*} 
   \mathbb{P}[R_1 < -0.1] 
   &= \int_{-\infty}^{-0.1} f_R(x)\mathrm{d}x \\
-  &= \Phi\;\left( \frac{-0.1 - 0.06}{0.156205} \right) \\
-  &= \Phi\;\left(`r round((-0.1-0.06)/0.156205,4)`\right)\\
-  &=`r round(prob_val2,5)`
+  &= \Phi \left( \frac{-0.1 - 0.06}{0.156205} \right) \\
+  &= \Phi \left(`r round((-0.1-0.06)/0.156205,4)`\right)\\
+  &=`r fmt_trunc_ellip(results_r1["T2"])`
 \end{align*}
 
-$$
-\begin{array}{ll}
-\hline
-\text{Answer} & \mathbf{`r round(100 * prob_val2, 3)`}\% \\
-\hline
-\end{array}
-$$
+<!-- prettier-ignore -->
+::: {.answer-wrapper}
+::: {.answer} 
+Answer: `r sprintf("%.3f", results_r1["T2"]*100)`% (3dp)
+:::
+:::
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(d)  Calculate the shortfall probabilities for asset 2
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ## Repeat part Q3c above for asset 2.
 
@@ -565,18 +653,18 @@ $$
 \text{Distribution of }R_{2}  & \begin{cases}
 X\mid Z =1 &\sim \mathcal{N}(\mu=0.0, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.8\\
 X\mid Z =2 &\sim \mathcal{N}(\mu=0.3, \, \sigma^{2}=0.1^{2}) \quad \text{w.p. } 0.2
-\end{cases} \\[6pt]
+\end{cases} \\[8pt]
 \text{Shortfall probability}
 & \mathbb{P}(R_2 < L)
 = 0.8 \int_{-\infty}^{L} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x
-+ 0.2 \int_{-\infty}^{L} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
++ 0.2 \int_{-\infty}^{L} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\[6pt]
 \hline
 \end{array}
 $$
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(d)(i)  benchmark 0%
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ### benchmark = 0%,
 
@@ -585,23 +673,22 @@ $$
   \mathbb{P}[R_2 < 0] 
   &= 0.8 \int_{-\infty}^{0} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x + 
     0.2 \int_{-\infty}^{0} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
-  &= 0.8 \times \Phi \; \left( \frac{0 - 0}{0.1} \right) + 
-    0.2 \times \Phi\;\left( \frac{0 - 0.3}{0.1} \right) \\
-    &= 0.8 \times \Phi\;\left(0\right) + 0.2 \times \Phi\;\left(-3\right) \\
-    &=`r round(0.8*0.5+0.2*pnorm(-3),5)` \\
+  &= 0.8 \times \Phi \left( \frac{0 - 0}{0.1} \right) + 
+    0.2 \times \Phi \left( \frac{0 - 0.3}{0.1} \right) \\
+    &= 0.8 \times \Phi \left(0\right) + 0.2 \times \Phi \left(-3\right) \\
+    &=`r fmt_trunc_ellip(results_r2["T1"])`
 \end{align*}
 
-$$
-\begin{array}{ll}
-\hline
-\text{Answer} & \mathbf{`r 100*round(0.8*0.5+0.2*pnorm(-3),5)`}\% \\
-\hline
-\end{array}
-$$
+<!-- prettier-ignore -->
+::: {.answer-wrapper}
+::: {.answer} 
+Answer: `r sprintf("%.3f", results_r2["T1"]*100)`% (3dp)
+:::
+:::
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(d)(ii)  benchmark -10%
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ### benchmark = -10%,
 
@@ -612,23 +699,22 @@ benchmark =-10%
   \mathbb{P}[R_2 < -0.1] 
   &= 0.8 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0,\,0.1^2)}(x)\, \mathrm{d}x + 
   0.2 \int_{-\infty}^{-0.1} f_{\mathcal{N}(0.3,\,0.1^2)}(x)\, \mathrm{d}x \\
-  &= 0.8 \times \Phi\;\left( \frac{-0.1 - 0}{0.1} \right) + 0.2 \times 
-    \Phi\;\left( \frac{-0.1 - 0.3}{0.1} \right) \\
-    &= 0.8 \times \Phi\;\left(-1\right) + 0.2 \times \Phi\;\left(-4\right) \\
-    &=`r round(0.8*pnorm(-1)+0.2*pnorm(-4),5)` \\
+  &= 0.8 \times \Phi \left( \frac{-0.1 - 0}{0.1} \right) + 0.2 \times 
+    \Phi \left( \frac{-0.1 - 0.3}{0.1} \right) \\
+    &= 0.8 \times \Phi \left(-1\right) + 0.2 \times \Phi \left(-4\right) \\
+    &=`r fmt_trunc_ellip(results_r2["T2"])`
 \end{align*}
 
-$$
-\begin{array}{ll}
-\hline
-\text{Answer} & \mathbf{`r 100*round(0.8*pnorm(-1)+0.2*pnorm(-4),5)`}\% \\
-\hline
-\end{array}
-$$
+<!-- prettier-ignore -->
+::: {.answer-wrapper}
+::: {.answer} 
+Answer: `r sprintf("%.3f", results_r2["T2"]*100)`% (3dp)
+:::
+:::
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(e)  Plot pdfs of returns for assets 1 and 2 on the same axes
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes.
 
@@ -687,9 +773,9 @@ grid()
 
 ```
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(f) plot the cdfs of returns for assets 1 and 2 on the same axes.
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes.
 
@@ -739,9 +825,9 @@ grid()
 
 ```
 
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 <!-- # Q3(g)  comment on the risk involved in asset 2, compared to asset 1
-<!-- # ============================================================================== -->
+<!-- # ================================================================== -->
 
 ## Based on your answers to parts Q3a–Q3f above, comment on the risk involved in asset 2, compared to asset 1.
 
@@ -791,7 +877,15 @@ TBI -->
 
 # Supplemental methodology {#apd-supplementary-methods}
 
-# Reproducibility, accessibility & declarations (Gen-AI & word count)
+## Selection of stocks
+
+Five american insurance stocks were selected...
+
+- They were selected on the basis of...
+- Probably ~2 paragraphs here (& could potentially include graph here rather
+  than under question 1? Honestly don't know - let's discuss).
+
+# Reproducibility, accessibility & declarations (Gen-AI & word count?)
 
 <!-- BE note: taken out as we are submitting R file separately -->
 <!-- Use: `knitr::purl("cs1-group07.rmd", documentation = 0)` to generate r file -->
@@ -804,17 +898,18 @@ TBI -->
 
 An accessible HTML version of this report is available via a public GitHub page:
 
-- TBI
+- https://ytterbiu.github.io/smm068-AS-assignment01-g08/
 
 This report was created in R Markdown. The source code is open source and is
 available via:
 
-- TBI
+- https://github.com/ytterbiu/smm068-AS-assignment01-g08
 
 Changes made to this document were tracked using Git and are also available via
-the same repository (link TBI!). Please note that this commit history reflects
-updates made to the project repository and is not a comprehensive timeline of
-all contributions by group members.
+the same repository
+(https://github.com/ytterbiu/smm068-AS-assignment01-g08/commits/main/). Please
+note that this commit history reflects updates made to the project repository
+and is not a comprehensive timeline of all contributions by group members.
 
 ## Generative AI Declaration
 
