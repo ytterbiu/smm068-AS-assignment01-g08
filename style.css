@@ -1,0 +1,15 @@
+.answer-wrapper {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.answer {
+  background-color: #ffffcc; 
+  border: 1.5px solid #d4d400; 
+  border-radius: 10px;        
+  padding: 10px 20px;
+  font-weight: bold;
+  display: inline-block;      
+  text-align: center;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1); 
+}
