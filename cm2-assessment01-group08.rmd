@@ -57,7 +57,7 @@ This R Markdown document was created as part of a group assignment for SMM068 at
 #   - Ardi Wira Sudarmo
 # Professor:    Dr. Iqbal Owadally
 # Institution:  Bayes Business School - City St George's, University of London
-# Date:         TBC
+# Date:         TBC~
 # Description:  Term 2 group project for SMM068 Financial Economics
 # (50% of coursework grade - 10% of module grade). The R code below
 # has been exported directly from an R Markdown (.rmd) file.  Hence the knitr
