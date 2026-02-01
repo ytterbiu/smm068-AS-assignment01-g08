@@ -729,7 +729,7 @@ three-sigma intervals of $[-0.3, 0.3]$ and $[0.0, 0.6]$ , respectively. The
 selected range $[-0.5, 0.6]$ therefore covers approximately three standard
 deviations for both assets.
 
-```{r}
+```{r Q3-part-e-v1, echo=FALSE}
 x <- seq(-0.5, 0.6, by = 0.001)
 R1_pdf <- dnorm(x, mean = 0.06, sd = sqrt(0.0244))
 R2_pdf <- 0.8 * dnorm(x, mean = 0, sd = 0.1) + 0.2 * dnorm(x, mean = 0.3, sd = 0.1)
@@ -773,6 +773,92 @@ grid()
 
 ```
 
+```{r Q3-part-e-ggplot, eval = TRUE, echo = FALSE, fig.width=6, fig.height=6.0, fig.cap = "Comparison of Asset 1 and Asset 2 return distributions. Top shows probability density functions for assets 1 and 2 and the bottom plot shows the point-wise difference in density (Asset 2 minus Asset 1), highlighting the regions of relative over- and under-exposure.", fig.pos='!ht'}
+
+x_vals <- seq(-0.6, 0.6, by = 0.001)
+
+threshold_df <- data.frame(
+  x_int = thresholds,
+  name = names(thresholds)
+)
+
+pdf_r1 <- dnorm(x_vals, mean = r1_mu, sd = r1_sd)
+pdf_r2 <- r2_p1 *
+  dnorm(x_vals, mean = r2_mu1, sd = r2_sd1) +
+  r2_p2 * dnorm(x_vals, mean = r2_mu2, sd = r2_sd2)
+
+plot_df <- tibble(
+  x = x_vals,
+  R1 = pdf_r1,
+  R2 = pdf_r2,
+  diff = pdf_r2 - pdf_r1
+)
+
+base_theme <- theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 11, face = "bold"),
+    plot.margin = margin(5.5, 5.5, 5.5, 5.5),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    legend.position = "top",
+    legend.title = element_blank()
+  )
+
+df_long <- plot_df %>%
+  select(x, R1, R2) %>%
+  pivot_longer(cols = c(R1, R2), names_to = "Asset", values_to = "Density")
+
+p1_pdf <- ggplot(df_long, aes(x = x, y = Density, color = Asset)) +
+  geom_line(linewidth = 0.8) +
+  geom_vline(
+    data = threshold_df,
+    aes(xintercept = x_int),
+    linetype = "dotted",
+    color = "black",
+    linewidth = 0.6
+  ) +
+  geom_text(
+    data = threshold_df,
+    aes(x = x_int, y = 0.1, label = name),
+    inherit.aes = FALSE,
+    angle = 0,
+    vjust = -0.5,
+    size = 3.5,
+    fontface = "bold"
+  ) +
+  scale_color_manual(values = c("R1" = "red", "R2" = "blue")) +
+  labs(
+    title = "Probability Density Functions of Returns",
+    x = NULL,
+    y = "Density"
+  ) +
+  base_theme
+
+p2_pdf <- ggplot(plot_df, aes(x = x, y = diff)) +
+  geom_line(color = "darkgreen", linewidth = 0.8) +
+  geom_vline(
+    data = threshold_df,
+    aes(xintercept = x_int),
+    linetype = "dotted",
+    color = "black",
+    linewidth = 0.6
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "black",
+    alpha = 0.5
+  ) +
+  labs(
+    title = "Difference between PDFs (Asset 2 - Asset 1)",
+    x = "Return",
+    y = "Density"
+  ) +
+  base_theme
+
+(p1_pdf / p2_pdf) + plot_layout(heights = c(1.2, 1))
+```
+
 <!-- # ================================================================== -->
 <!-- # Q3(f) plot the cdfs of returns for assets 1 and 2 on the same axes.
 <!-- # ================================================================== -->
@@ -781,7 +867,7 @@ grid()
 
 _[2 marks]_
 
-```{r}
+```{r Q3-part-f-v1, echo=FALSE}
 
 R1_cdf <- pnorm(x, mean = 0.06, sd = sqrt(0.0244))
 R2_cdf <- 0.8 * pnorm(x, mean = 0, sd = 0.1) + 0.2 * pnorm(x, mean = 0.3, sd = 0.1)
@@ -825,13 +911,180 @@ grid()
 
 ```
 
+```{r Q3-part-f-ggplot, eval = TRUE, echo = FALSE, fig.width=6, fig.height=6.0, fig.cap = "Comparison of asset 1 and asset 2 cumulative distribution functions. Threshold values used are marked on both graphs...", fig.pos='!ht'}
+
+cdf_r1 <- pnorm(x_vals, mean = r1_mu, sd = r1_sd)
+cdf_r2 <- r2_p1 *
+  pnorm(x_vals, mean = r2_mu1, sd = r2_sd1) +
+  r2_p2 * pnorm(x_vals, mean = r2_mu2, sd = r2_sd2)
+
+cdf_df <- tibble(
+  x = x_vals,
+  R1 = cdf_r1,
+  R2 = cdf_r2,
+  diff = cdf_r2 - cdf_r1
+)
+
+cdf_long <- cdf_df %>%
+  select(x, R1, R2) %>%
+  pivot_longer(cols = c(R1, R2), names_to = "Asset", values_to = "Probability")
+
+p1_cdf <- ggplot(cdf_long, aes(x = x, y = Probability, color = Asset)) +
+  geom_line(linewidth = 0.8) +
+  geom_vline(
+    data = threshold_df,
+    aes(xintercept = x_int),
+    linetype = "dotted",
+    color = "black",
+    linewidth = 0.6
+  ) +
+  geom_text(
+    data = threshold_df,
+    aes(x = x_int, y = 0.95, label = name),
+    inherit.aes = FALSE,
+    angle = 0,
+    vjust = -0.5,
+    size = 3.5,
+    fontface = "bold"
+  ) +
+  scale_color_manual(values = c("R1" = "red", "R2" = "blue")) +
+  labs(
+    title = "Cumulative Distribution Functions of Returns",
+    x = NULL,
+    y = "Probability (CDF)"
+  ) +
+  base_theme
+
+p2_cdf <- ggplot(cdf_df, aes(x = x, y = diff)) +
+  geom_line(color = "darkgreen", linewidth = 0.8) +
+  geom_vline(
+    data = threshold_df,
+    aes(xintercept = x_int),
+    linetype = "dotted",
+    color = "black",
+    linewidth = 0.6
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "black",
+    alpha = 0.5
+  ) +
+  labs(
+    title = "Difference between CDFs (Asset 2 - Asset 1)",
+    x = "Return",
+    y = "Difference"
+  ) +
+  base_theme
+
+(p1_cdf / p2_cdf) + plot_layout(heights = c(1.2, 1))
+```
+
+```{=latex}
+\newpage
+```
+
 <!-- # ================================================================== -->
 <!-- # Q3(g)  comment on the risk involved in asset 2, compared to asset 1
 <!-- # ================================================================== -->
 
-## Based on your answers to parts Q3a–Q3f above, comment on the risk involved in asset 2, compared to asset 1.
+## Comment on the risk involved in asset 2, compared to asset 1. _[4 marks]_
 
-_[4 marks]_
+Based on your answers to parts Q3a–Q3f above, comment on the risk involved in
+asset 2, compared to asset 1. _[4 marks]_
+
+```{r Q3-part-g, echo=FALSE}
+shortfall_transposed <- data.frame(
+  Asset = c("R1", "R2"),
+  T1 = c(results_r1[1], results_r2[1]),
+  T2 = c(results_r1[2], results_r2[2])
+)
+
+shortfall_transposed %>%
+  mutate(
+    across(starts_with("T"), ~paste0(round(.x * 100, 3)))
+  ) %>%
+  kable(
+    booktabs = TRUE,
+    caption = "Shortfall probabilities...*! (values given as percentages)",
+    align = "lcc",
+    col.names = c("Asset", "Threshold $T_1 = 0$", "Threshold $T_2 = -0.1$"),
+    escape = FALSE
+  ) %>%
+  kable_styling(full_width = FALSE, position = "center")
+```
+
+BE note: quick test - refine later~
+
+```{r Q3-testing, echo=FALSE}
+thresholds <- c(
+  T1 = 0,
+  T2 = -0.05,
+  T3 = -0.1,
+  T4 = -0.15,
+  T5 = -0.2,
+  T6 = -0.25,
+  T7 = -0.5,
+  T8 = -0.75
+)
+
+results_r1 <- pnorm(thresholds, mean = r1_mu, sd = r1_sd)
+results_r2 <- sapply(thresholds, calc_shortfall_r2)
+
+shortfall_transposed <- data.frame(
+  Asset = c("R1", "R2"),
+  rbind(results_r1, results_r2)
+)
+# shortfall_transposed %>%
+#   mutate(
+#     across(where(is.numeric), ~ sprintf("%.3f", .x * 100))
+#   ) %>%
+#   kable(
+#     booktabs = TRUE,
+#     caption = "Shortfall probabilities at various thresholds (values given as percentages)",
+#     align = "lccccc",
+#     col.names = c("Asset", paste0("$", names(thresholds), " = ", thresholds, "$")),
+#     escape = FALSE
+#   ) %>%
+#   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") %>%
+#   column_spec(1, bold = TRUE) %>%
+#   row_spec(0, bold = TRUE)
+
+shortfall_long <- data.frame(
+  Threshold = names(thresholds),
+  Value = thresholds,
+  R1 = results_r1,
+  R2 = results_r2
+)
+
+shortfall_long %>%
+  mutate(across(
+    c(R1, R2),
+    ~ formatC(.x * 100, format = "g", digits = 3, flag = "#")
+  )) %>%
+  kable(
+    booktabs = TRUE,
+    caption = "Shortfall probabilities - note how probability of getting a loss is greater for asset 2, but the probability of getting a huge loss (after ~5p.c. loss) is more likely for asset 1)",
+    col.names = c("Label", "Threshold Value (raw)", "R1 (percent)", "R2 (percent)"),
+    align = "llcc"
+  ) %>%
+  kable_styling(full_width = FALSE, latex_options = "hold_position")
+```
+
+BE note: have made above table. Not sure about point below regarding asset 2 having a higher risk of extreme outcomes (it's more likely to lose money generally, but less likely for extreme events, no?)
+
+- Answer might want us to link this to investor types (Asset 1 linked to not liking any type of risk vs R2 being more comfortable with some minor volatility risk, but wanting lower risk of getting completely wiped out)
+- Probably also want to mention CDFs crossing - so no one asset clearly less or more risky than the other
+- Do we want to mention cross-over point? Think it's ~ -0.05777418
+- So this means for any target return higher than about -5.8%, Asset 1 is safer and for any target return lower than -5.8%, Asset 2 is safer?
+
+```{r Q3-cross-over-point, echo=TRUE}
+find_crossing <- function(L) {
+    pnorm(L, r1_mu, r1_sd) - (r2_p1*pnorm(L, r2_mu1, r2_sd1) + r2_p2*pnorm(L, r2_mu2, r2_sd2))
+}
+crossing_point <- uniroot(find_crossing, interval = c(-0.1, 0.05))
+crossing_point$root
+```
 
 Based on the results from $Q3(a)$ to $Q3(f)$, asset 2 appears to be riskier than
 asset1, even though their expected returns are similar. Asset 1 follows a single
@@ -884,6 +1137,121 @@ Five american insurance stocks were selected...
 - They were selected on the basis of...
 - Probably ~2 paragraphs here (& could potentially include graph here rather
   than under question 1? Honestly don't know - let's discuss).
+
+## Additional figures (TBC)
+
+```{r appendix-additional-figures, echo=FALSE}
+calc_cdf_diff <- function(x) {
+  cdf_r1 <- pnorm(x, mean = r1_mu, sd = r1_sd)
+  cdf_r2 <- r2_p1 * pnorm(x, r2_mu1, r2_sd1) +
+            r2_p2 * pnorm(x, r2_mu2, r2_sd2)
+  return(cdf_r2 - cdf_r1)
+}
+lower_res <- uniroot(calc_cdf_diff, interval = c(-0.2, 0))
+lower_x   <- lower_res$root
+upper_res <- uniroot(calc_cdf_diff, interval = c(0.1, 0.4))
+upper_x   <- upper_res$root
+
+crossovers <- c(Lower = lower_x, Upper = upper_x)
+```
+
+```{r Q3-final-combined-plot, eval = TRUE, echo = FALSE, fig.width=7, fig.height=8.0, fig.cap = "Top: pdf, middle: cdfs showing crossover in shortfall probabilities, bottom: difference between R2 and R1 (R2-R1) -> a positive value indicates R2 is riskier and a negative value indicates R1 is riskier.", fig.pos='!ht'}
+
+x_vals <- seq(-0.6, 0.6, by = 0.001)
+
+pdf_r1 <- dnorm(x_vals, mean = r1_mu, sd = r1_sd)
+pdf_r2 <- r2_p1 * dnorm(x_vals, mean = r2_mu1, sd = r2_sd1) +
+          r2_p2 * dnorm(x_vals, mean = r2_mu2, sd = r2_sd2)
+
+cdf_r1 <- pnorm(x_vals, mean = r1_mu, sd = r1_sd)
+cdf_r2 <- r2_p1 * pnorm(x_vals, mean = r2_mu1, sd = r2_sd1) +
+          r2_p2 * pnorm(x_vals, mean = r2_mu2, sd = r2_sd2)
+
+plot_df <- tibble(
+  x = x_vals,
+  PDF_R1 = pdf_r1, PDF_R2 = pdf_r2,
+  CDF_R1 = cdf_r1, CDF_R2 = cdf_r2,
+  Diff = cdf_r2 - cdf_r1
+)
+
+base_theme <- theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 10, face = "bold"),
+    panel.grid.minor = element_blank(),
+    # panel.grid.major.x = element_blank(),
+    legend.position = "none"
+  )
+
+p1 <- ggplot(plot_df) +
+  geom_line(aes(x, PDF_R1, color = "R1"), linewidth = 0.8) +
+  geom_line(aes(x, PDF_R2, color = "R2"), linewidth = 0.8) +
+  scale_color_manual(values = c("R1" = "red", "R2" = "blue")) +
+  labs(title = "Probability density functions", x = NULL, y = "Density") +
+  base_theme + theme(legend.position = "top", legend.title = element_blank())
+
+p2 <- ggplot(plot_df) +
+  geom_line(aes(x, CDF_R1), color = "red", linewidth = 0.8) +
+  geom_line(aes(x, CDF_R2), color = "blue", linewidth = 0.8) +
+  geom_vline(xintercept = crossovers, linetype = "dotted", color = "black") +
+  annotate(
+    "text",
+    x = crossovers,
+    y = c(0.85, 0.15),
+    label = paste0("x = ", round(crossovers, 4)),
+    angle = 90,
+    vjust = -0.5,
+    size = 3,
+    fontface = "bold"
+  ) +
+  labs(title = "Cumulative distribution functions", x = NULL, y = "Prob") +
+  base_theme
+
+p3 <- ggplot(plot_df, aes(x, Diff)) +
+  geom_area(fill = "darkgreen", alpha = 0.2) +
+  geom_line(color = "darkgreen", linewidth = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = crossovers, linetype = "dotted") +
+  labs(title = "CDF difference (R2 - R1)", x = "Return", y = "Difference") +
+  base_theme
+
+if (knitr::is_html_output()) {
+  # convert to plotly individually
+  pp1 <- ggplotly(p1)
+  pp2 <- ggplotly(p2)
+  pp3 <- ggplotly(p3)
+
+  # combine (doesn't work well otherwise)
+  subplot(
+    pp1,
+    pp2,
+    pp3,
+    nrows = 3,
+    shareX = TRUE,
+    titleY = TRUE,
+    heights = c(0.33, 0.33, 0.33)
+  ) %>%
+    layout(
+      height = 650,
+      title = list(
+        text = "Test 3 plot plotly",
+        x = 0.5,
+        xanchor = "center"
+      ),
+      legend = list(
+        orientation = "h",
+        x = 0.5,
+        xanchor = "center",
+        y = -0.1,
+        yanchor = "top"
+      ),
+      margin = list(t = 70, b = 90, l = 70, r = 20),
+      hovermode = "x unified"
+    ) %>%
+    config(responsive = TRUE)
+} else {
+  (p1 / p2 / p3) + plot_layout(heights = c(1, 1, 0.8))
+}
+```
 
 # Reproducibility, accessibility & declarations (Gen-AI & word count?)
 
