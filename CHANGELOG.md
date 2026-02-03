@@ -23,6 +23,16 @@
   more/less extreme results / higher excess kurtosis(?)
 - Look into adding table comparing the pdf & cdf of asset 1 & 2 (`kable`)
 
+- BE note: asked question in week 03: can link this back to an investors utility function - their utility function would capture this
+  - potential to include this in the appendix in more detail (can't see disadvantage of doing this...)
+  - We can work out the expected utility using different functions score
+    $$
+    \mathbb{E}[U] = \sum P(x) \cdot U(x)
+    $$
+  - Then calculate this for the three different utility functions (& put results in a table)
+    - Utility functions: Quadratic, Logarithmic, & Power
+    - Thoughts on calculating this for each approach, putting in a table, then referring to this in the answer to last part of Q3?
+
 ### Changed
 
 ## 2026-02-01
@@ -39,5 +49,5 @@
 - Switch `round()` to `sprintf()` for fixed decimal formatting and PDF
   rendering.
 - Fix array spacing - possibly create custom environment for answers for QOL.
-  
+
 ### Fixed
