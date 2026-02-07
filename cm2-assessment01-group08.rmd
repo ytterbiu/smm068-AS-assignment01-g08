@@ -126,6 +126,14 @@ library(tidyr) # reshape data for reporting
 # BE note: not sure if we will need xts or zoo, but have left in for now
 library(xts) # for downloading / financial data analysis (used in CS1)
 library(zoo) # for downloading / financial data analysis (used in CS1)
+
+# BS note : for Q2 
+library(rootSolve) # This finds roots of (fairly straightforward) equations
+library(optimx)   #  This handles non-linear unconstrained optimization (as well as box-constrained).
+library(quadprog) # to solve a quadratic programming problem 
+library(scales) # to express portfolio weights as percentage
+library(pander)
+
 ```
 
 ```{r html-app, echo=FALSE, results='asis', eval=knitr::is_html_output(), purl=FALSE}
@@ -428,12 +436,246 @@ if (knitr::is_html_output()) {
 ```
 
 # Portfolio optimisation
+$$
+\begin{array}{ll}
+\hline
+\textbf{Quantity} & \textbf{Expression} \\
+\hline
+\text{The portfolio return }  &
+  R_p = \sum_{i=1}^{N} R_i
+  \\[6pt]
+\text{The expected portfolio return}
+  &\overline{R}_p = \mathbb{E}[R_p] = \sum_{i=1}^{N} x_i \, \overline{R}_i \\[6pt]
+\sigma_p \text{ is the standard deviation of return on the portfolio }
+  & \sigma_p^2 = \sum_{i=1}^{N} x_i^2 \sigma_i^2 + 2 \sum_{i=1}^{N-1} 
+    \sum_{j=i+1}^{N} x_i x_j \rho_{ij} \sigma_i \sigma_j \\[6pt]
+\text{Constraints 1}
+  & \sum_{i=1}^{N} x_i = 1  \\[6pt]
+\text{Constraints 2}
+  & \sum_{i=1}^{N}x_i\overline{R_i} = E \\[6pt]
+\hline
+\end{array}
+$$
 
-TBI
+```{r Q2-working, echo=FALSE}
+# ==============================================================================
+# Q2(a) estimate all required statistics for the 5 stocks 
+# ==============================================================================
+
+# prices_mat <- as.matrix(prices[, -1])
+# returns <- log(prices_mat[-1, ]) - log(prices_mat[-nrow(prices_mat), ])
+# 
+# colnames(returns) <- colnames(prices_mat)
+# 
+# mean_returns_d <- colMeans(returns)
+# cov_matrix_d <- cov(returns)
+# sd_d  <- sqrt(diag(cov_matrix_d))
+# 
+# # Q2(a)_ annual expectation and covariance
+# 
+
+
+px <- prices[, -1]
+
+
+
+#%returns
+data1 <- lapply(px, function(x) {
+  ROC(as.numeric(x), type = "discrete") * 100   # % 단순수익률
+})
+
+ret1 <- as.data.frame(do.call(cbind, data1))
+colnames(ret1) <- colnames(px)
+
+
+# remove the first row of missing values
+ret1 <- ret1[-1, , drop = FALSE]
+
+# add dates column
+ret1 <- data.frame(Date = prices$Date[-1], ret1)
+
+# plot the data
+pander(head(ret1), split.table = Inf)
+
+# convert to long
+
+ret_long = pivot_longer(ret1, cols = -c(Date), values_to = "Return", names_to = "Stock")
+
+# plot
+
+port_p1 = ggplot(ret_long, aes(Date, Return, color = Stock)) + geom_path(stat = "identity") +
+    facet_grid(Stock ~ .) + theme_minimal() + labs(x = "Date", y = "Returns")
+port_p1 
+
+R_pct <- as.matrix(ret1[, -1]) 
+
+mean_returns_d <- colMeans(R_pct)      
+cov_matrix_d   <- cov(R_pct)          
+sd_d           <- sqrt(diag(cov_matrix_d))
+
+
+mean_returns_a <- mean_returns_d * nrow(R_pct) / 3/100
+cov_matrix_a <- cov_matrix_d* nrow(R_pct) / 3/100
+sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) / 3/100)
+N_return <- length(mean_returns_a)
+
+```
+
+Q2(a)
+ Daily returns were caculated from the adjusted closing prices of the five stocks. The expected returns were obtained by taking the average of the daily returns and the annualised.
+
+<!-- prettier-ignore -->
+::: {.answer-wrapper}
+::: {.answer}
+Answer: 
+ 
+ AIG : `r sprintf("%.3f", mean_returns_a[1]*100)`% (3dp)  
+ ALL : `r sprintf("%.3f", mean_returns_a[2]*100)`% (3dp)  
+ CB  : `r sprintf("%.3f", mean_returns_a[3]*100)`% (3dp)  
+ PGR : `r sprintf("%.3f", mean_returns_a[4]*100)`% (3dp)  
+ TRV`: `r sprintf("%.3f", mean_returns_a[5]*100)`% (3dp) 
+ 
+:::
+:::
+
+The variance–covariance matrix were also estimated using the same daily returns and annualised accordingly.
+The results show that the stocks have different levels of return and risk
+
+```{r Q2a, echo=FALSE}
+cov_matrix_a
+```
 
 ```{=latex}
 \newpage
 ```
+
+
+```{r Q2b-working, echo=FALSE}
+# ==============================================================================
+# Q2(b) estimate all required statistics for the 5 stocks 
+# ==============================================================================
+# method log return
+# ==============================================================================
+
+# number of securities
+n_sec <- ncol(cov_matrix_a)
+
+# Budget constraint
+ct_1_lhs <- rep(1, n_sec); ct_1_rhs <- 1
+
+#  Target return constraint: x_1 mu_1 + x_2 mu_2 + x_3 mu_3 + x_4 mu_4 
+#                            + x_5 mu_5= mu_target <=> mu^T x = mu_target
+
+ct_2_lhs <- mean_returns_a ; ct_2_rhs <- mean(mean_returns_a)
+
+#  Optimization. There is one constraint: the budget constraint
+
+dmat <- cov_matrix_a
+
+# dvec is a column vector of 0's
+dvec <- cbind(rep( 0, n_sec ) )
+amat <- rbind(ct_1_lhs, diag(n_sec)) # Creates a row vector
+bvec <- c(ct_1_rhs, rep(0, n_sec)) 
+meq <- 1 # One equality constraint
+
+# Solve for global min var portfolio. t() is the transpose function
+pf_gbl <- solve.QP(dmat, dvec, t(amat), bvec, meq)
+pf_gbl$solution
+
+# Optimization. There are two constraints:
+# budget constraint and target expected return constraint
+amat <- rbind(ct_1_lhs, ct_2_lhs, diag(n_sec))
+bvec <- c(ct_1_rhs, ct_2_rhs, rep(0, n_sec))
+meq <- 2 # Two equality constraints
+# Solve for required portfolio. t() is the transpose function
+pf_mvf <- solve.QP(dmat, dvec, t(amat), bvec, meq)
+# State the required portfolio
+pf_mvf$solution
+
+# target
+targets <- seq(min(mean_returns_a), max(mean_returns_a), length.out = 200)
+
+res <- lapply(targets, function(tar) {
+
+  amat <- rbind(ct_1_lhs, ct_2_lhs, diag(N_return))
+  bvec <- c(ct_1_rhs, tar, rep(0, N_return))
+
+  sol <- tryCatch(
+    solve.QP(dmat, dvec, t(amat), bvec, meq = 2),
+    error = function(e) NULL
+  )
+  if (is.null(sol)) return(NULL)
+
+  w <- sol$solution
+  w[w < 1e-10] <- 0
+  w <- w / sum(w)
+
+  c(
+    risk = sqrt(t(w) %*% cov_matrix_a %*% w),
+    ret  = sum(w * mean_returns_a)
+  )
+})
+
+res <- do.call(rbind, res)
+
+# clean weights
+w_opt <- pf_mvf$solution
+w_opt[w_opt < 1e-10] <- 0
+w_opt <- w_opt / sum(w_opt)
+
+# optimal portfolio coordinates
+opt_mean <- sum(w_opt * mean_returns_a)
+opt_sd   <- sqrt(drop(t(w_opt) %*% cov_matrix_a %*% w_opt))
+
+# plot
+plot(sqrt(diag(cov_matrix_a)), mean_returns_a,
+     pch = 1, cex = 1.2,
+     xlab = "StdDev", ylab = "mean",
+     main = "Mean Variance Portfolio",
+     xlim = range(sqrt(diag(cov_matrix_a))) * c(0.9, 1.1),
+     ylim = range(mean_returns_a) * c(0.9, 1.1))
+
+# labels for assets
+text(sqrt(diag(cov_matrix_a)), mean_returns_a, labels = names(mean_returns_a), pos = 4, cex = 0.9)
+
+# optimal point (blue)
+points(opt_sd, opt_mean, pch = 16, col = "blue", cex = 1.3)
+text(opt_sd, opt_mean, labels = "Optimal", pos = 4, col = "blue")
+grid()
+
+plot(res[, "risk"], res[, "ret"],
+     type = "l",
+     col = "red", lwd = 1,
+     xlab = "Mean-Var target Risk",
+     ylab = "Expected Return",
+     xlim = range(res[, "risk"]) * c(0.98, 1.02),
+     main = "Efficient Frontier (No short selling)")
+grid()
+i_gmv <- which.min(res[, "risk"])
+
+lines(res[i_gmv:nrow(res), "risk"],
+      res[i_gmv:nrow(res), "ret"],
+       col = "darkgreen",
+      lwd = 2)
+asset_cols <- c("red", "blue", "orange", "purple", "brown")
+points(
+  sqrt(diag(cov_matrix_a)),
+  mean_returns_a,
+  pch = 16,
+  cex = 1.3,
+  col = asset_cols
+)
+
+text(sqrt(diag(cov_matrix_a)), mean_returns_a,
+     labels = names(mean_returns_a),
+     pos = 4, cex = 0.9,
+     col = asset_cols)
+
+
+```
+
+
+
 
 # Asset risk theory {#qthree}
 
