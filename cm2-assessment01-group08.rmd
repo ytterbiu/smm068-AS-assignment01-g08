@@ -517,6 +517,8 @@ cov_matrix_d   <- cov(R_pct)
 sd_d           <- sqrt(diag(cov_matrix_d))
 
 # BE note to check: why factors of 3/100?
+# /3 to get 1 year's worth of data
+# then *100 to get 1 year as a %
 mean_returns_a <- mean_returns_d * nrow(R_pct) /3/100
 cov_matrix_a <- cov_matrix_d* nrow(R_pct) / 3/100
 sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) / 3/100)
@@ -534,11 +536,11 @@ Daily returns were calculated from the adjusted closing prices of the five stock
 ::: {.answer}
 Answer:
 
-AIG `r sprintf("%.3f", mean_returns_a[1]*100)`% (3dp) 
-ALL `r sprintf("%.3f", mean_returns_a[2]*100)`% (3dp) 
-CB `r sprintf("%.3f", mean_returns_a[3]*100)`% (3dp) 
-PGR `r sprintf("%.3f", mean_returns_a[4]*100)`% (3dp) 
-TRV `r sprintf("%.3f", mean_returns_a[5]*100)`% (3dp)
+`r sprintf("%s %.3f",colnames(ret1)[2], mean_returns_a[1]*100)`% (3dp) 
+`r sprintf("%s %.3f",colnames(ret1)[3], mean_returns_a[2]*100)`% (3dp) 
+`r sprintf("%s %.3f",colnames(ret1)[4], mean_returns_a[3]*100)`% (3dp) 
+`r sprintf("%s %.3f",colnames(ret1)[5], mean_returns_a[4]*100)`% (3dp) 
+`r sprintf("%s %.3f",colnames(ret1)[6], mean_returns_a[5]*100)`% (3dp)
 
 :::
 :::
