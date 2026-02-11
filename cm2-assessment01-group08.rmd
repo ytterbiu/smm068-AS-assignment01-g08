@@ -127,10 +127,10 @@ library(tidyr) # reshape data for reporting
 library(xts) # for downloading / financial data analysis (used in CS1)
 library(zoo) # for downloading / financial data analysis (used in CS1)
 
-# BS note : for Q2 
+# BS note : for Q2
 library(rootSolve) # This finds roots of (fairly straightforward) equations
 library(optimx)   #  This handles non-linear unconstrained optimization (as well as box-constrained).
-library(quadprog) # to solve a quadratic programming problem 
+library(quadprog) # to solve a quadratic programming problem
 library(scales) # to express portfolio weights as percentage
 library(pander)
 
@@ -436,6 +436,7 @@ if (knitr::is_html_output()) {
 ```
 
 # Portfolio optimisation
+
 $$
 \begin{array}{ll}
 \hline
@@ -447,7 +448,7 @@ $$
 \text{The expected portfolio return}
   &\overline{R}_p = \mathbb{E}[R_p] = \sum_{i=1}^{N} x_i \, \overline{R}_i \\[6pt]
 \sigma_p \text{ is the standard deviation of return on the portfolio }
-  & \sigma_p^2 = \sum_{i=1}^{N} x_i^2 \sigma_i^2 + 2 \sum_{i=1}^{N-1} 
+  & \sigma_p^2 = \sum_{i=1}^{N} x_i^2 \sigma_i^2 + 2 \sum_{i=1}^{N-1}
     \sum_{j=i+1}^{N} x_i x_j \rho_{ij} \sigma_i \sigma_j \\[6pt]
 \text{Constraints 1}
   & \sum_{i=1}^{N} x_i = 1  \\[6pt]
@@ -459,29 +460,27 @@ $$
 
 ```{r Q2-working, echo=FALSE}
 # ==============================================================================
-# Q2(a) estimate all required statistics for the 5 stocks 
+# Q2(a) estimate all required statistics for the 5 stocks
 # ==============================================================================
 
 # prices_mat <- as.matrix(prices[, -1])
 # returns <- log(prices_mat[-1, ]) - log(prices_mat[-nrow(prices_mat), ])
-# 
+#
 # colnames(returns) <- colnames(prices_mat)
-# 
+#
 # mean_returns_d <- colMeans(returns)
 # cov_matrix_d <- cov(returns)
 # sd_d  <- sqrt(diag(cov_matrix_d))
-# 
+#
 # # Q2(a)_ annual expectation and covariance
-# 
+#
 
-
+# drop date column
 px <- prices[, -1]
-
-
 
 #%returns
 data1 <- lapply(px, function(x) {
-  ROC(as.numeric(x), type = "discrete") * 100   # % 단순수익률
+  ROC(as.numeric(x), type = "discrete") * 100   # % 단순수익률 (<- simple return?)
 })
 
 ret1 <- as.data.frame(do.call(cbind, data1))
@@ -505,15 +504,15 @@ ret_long = pivot_longer(ret1, cols = -c(Date), values_to = "Return", names_to = 
 
 port_p1 = ggplot(ret_long, aes(Date, Return, color = Stock)) + geom_path(stat = "identity") +
     facet_grid(Stock ~ .) + theme_minimal() + labs(x = "Date", y = "Returns")
-port_p1 
+port_p1
 
-R_pct <- as.matrix(ret1[, -1]) 
+R_pct <- as.matrix(ret1[, -1])
 
-mean_returns_d <- colMeans(R_pct)      
-cov_matrix_d   <- cov(R_pct)          
+mean_returns_d <- colMeans(R_pct)
+cov_matrix_d   <- cov(R_pct)
 sd_d           <- sqrt(diag(cov_matrix_d))
 
-
+# BE note to check: why factors of 3/100?
 mean_returns_a <- mean_returns_d * nrow(R_pct) / 3/100
 cov_matrix_a <- cov_matrix_d* nrow(R_pct) / 3/100
 sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) / 3/100)
@@ -521,22 +520,46 @@ N_return <- length(mean_returns_a)
 
 ```
 
-Q2(a)
- Daily returns were caculated from the adjusted closing prices of the five stocks. The expected returns were obtained by taking the average of the daily returns and the annualised.
+## Q2(a)
 
+Daily returns were calculated from the adjusted closing prices of the five stocks. The expected returns were obtained by taking the average of the daily returns and the annualised.
+
+<!-- BE note: !look to put below in loop that auto-fetches stock name -->
 <!-- prettier-ignore -->
 ::: {.answer-wrapper}
 ::: {.answer}
-Answer: 
- 
- AIG : `r sprintf("%.3f", mean_returns_a[1]*100)`% (3dp)  
- ALL : `r sprintf("%.3f", mean_returns_a[2]*100)`% (3dp)  
- CB  : `r sprintf("%.3f", mean_returns_a[3]*100)`% (3dp)  
- PGR : `r sprintf("%.3f", mean_returns_a[4]*100)`% (3dp)  
- TRV`: `r sprintf("%.3f", mean_returns_a[5]*100)`% (3dp) 
- 
+Answer:
+
+AIG `r sprintf("%.3f", mean_returns_a[1]*100)`% (3dp) 
+ALL `r sprintf("%.3f", mean_returns_a[2]*100)`% (3dp) 
+CB `r sprintf("%.3f", mean_returns_a[3]*100)`% (3dp) 
+PGR `r sprintf("%.3f", mean_returns_a[4]*100)`% (3dp) 
+TRV `r sprintf("%.3f", mean_returns_a[5]*100)`% (3dp)
+
 :::
 :::
+
+
+<!-- # ```{r, echo=FALSE} -->
+<!-- # df <- data.frame( -->
+<!-- #   Stock = stocks, -->
+<!-- #   # Format: "12.345% (3dp)" -->
+<!-- #   Return = sprintf("%.3f (3dp)", mean_returns_a * 100)  -->
+<!-- # ) -->
+<!-- #  -->
+<!-- # kable(df,  -->
+<!-- #       col.names = c("Stock", "Mean Return perc. (3dp)"),  -->
+<!-- #       caption = "Answer: Portfolio Returns", -->
+<!-- #       booktabs = TRUE, -->
+<!-- #       escape = FALSE, -->
+<!-- #       align = "lc", -->
+<!-- # ) %>% -->
+<!-- #   kable_styling( -->
+<!-- #     full_width = FALSE, -->
+<!-- #     position = "center", -->
+<!-- #     latex_options = "hold_position" -->
+<!-- #   ) -->
+<!-- # ``` -->
 
 The variance–covariance matrix were also estimated using the same daily returns and annualised accordingly.
 The results show that the stocks have different levels of return and risk
@@ -549,10 +572,11 @@ cov_matrix_a
 \newpage
 ```
 
+## Q2b
 
 ```{r Q2b-working, echo=FALSE}
 # ==============================================================================
-# Q2(b) estimate all required statistics for the 5 stocks 
+# Q2(b) estimate all required statistics for the 5 stocks
 # ==============================================================================
 # method log return
 # ==============================================================================
@@ -561,21 +585,23 @@ cov_matrix_a
 n_sec <- ncol(cov_matrix_a)
 
 # Budget constraint
-ct_1_lhs <- rep(1, n_sec); ct_1_rhs <- 1
+ct_1_lhs <- rep(1, n_sec)
+ct_1_rhs <- 1
 
-#  Target return constraint: x_1 mu_1 + x_2 mu_2 + x_3 mu_3 + x_4 mu_4 
+#  Target return constraint: x_1 mu_1 + x_2 mu_2 + x_3 mu_3 + x_4 mu_4
 #                            + x_5 mu_5= mu_target <=> mu^T x = mu_target
 
-ct_2_lhs <- mean_returns_a ; ct_2_rhs <- mean(mean_returns_a)
+ct_2_lhs <- mean_returns_a
+ct_2_rhs <- mean(mean_returns_a)
 
 #  Optimization. There is one constraint: the budget constraint
 
 dmat <- cov_matrix_a
 
 # dvec is a column vector of 0's
-dvec <- cbind(rep( 0, n_sec ) )
+dvec <- cbind(rep(0, n_sec))
 amat <- rbind(ct_1_lhs, diag(n_sec)) # Creates a row vector
-bvec <- c(ct_1_rhs, rep(0, n_sec)) 
+bvec <- c(ct_1_rhs, rep(0, n_sec))
 meq <- 1 # One equality constraint
 
 # Solve for global min var portfolio. t() is the transpose function
@@ -595,8 +621,8 @@ pf_mvf$solution
 # target
 targets <- seq(min(mean_returns_a), max(mean_returns_a), length.out = 200)
 
+# BE note: want to understand this function
 res <- lapply(targets, function(tar) {
-
   amat <- rbind(ct_1_lhs, ct_2_lhs, diag(N_return))
   bvec <- c(ct_1_rhs, tar, rep(0, N_return))
 
@@ -604,7 +630,9 @@ res <- lapply(targets, function(tar) {
     solve.QP(dmat, dvec, t(amat), bvec, meq = 2),
     error = function(e) NULL
   )
-  if (is.null(sol)) return(NULL)
+  if (is.null(sol)) {
+    return(NULL)
+  }
 
   w <- sol$solution
   w[w < 1e-10] <- 0
@@ -612,7 +640,7 @@ res <- lapply(targets, function(tar) {
 
   c(
     risk = sqrt(t(w) %*% cov_matrix_a %*% w),
-    ret  = sum(w * mean_returns_a)
+    ret = sum(w * mean_returns_a)
   )
 })
 
@@ -625,38 +653,55 @@ w_opt <- w_opt / sum(w_opt)
 
 # optimal portfolio coordinates
 opt_mean <- sum(w_opt * mean_returns_a)
-opt_sd   <- sqrt(drop(t(w_opt) %*% cov_matrix_a %*% w_opt))
+opt_sd <- sqrt(drop(t(w_opt) %*% cov_matrix_a %*% w_opt))
 
 # plot
-plot(sqrt(diag(cov_matrix_a)), mean_returns_a,
-     pch = 1, cex = 1.2,
-     xlab = "StdDev", ylab = "mean",
-     main = "Mean Variance Portfolio",
-     xlim = range(sqrt(diag(cov_matrix_a))) * c(0.9, 1.1),
-     ylim = range(mean_returns_a) * c(0.9, 1.1))
+plot(
+  sqrt(diag(cov_matrix_a)),
+  mean_returns_a,
+  pch = 1,
+  cex = 1.2,
+  xlab = "StdDev",
+  ylab = "mean",
+  main = "Mean Variance Portfolio",
+  xlim = range(sqrt(diag(cov_matrix_a))) * c(0.9, 1.1),
+  ylim = range(mean_returns_a) * c(0.9, 1.1)
+)
 
 # labels for assets
-text(sqrt(diag(cov_matrix_a)), mean_returns_a, labels = names(mean_returns_a), pos = 4, cex = 0.9)
+text(
+  sqrt(diag(cov_matrix_a)),
+  mean_returns_a,
+  labels = names(mean_returns_a),
+  pos = 4,
+  cex = 0.9
+)
 
 # optimal point (blue)
 points(opt_sd, opt_mean, pch = 16, col = "blue", cex = 1.3)
 text(opt_sd, opt_mean, labels = "Optimal", pos = 4, col = "blue")
 grid()
 
-plot(res[, "risk"], res[, "ret"],
-     type = "l",
-     col = "red", lwd = 1,
-     xlab = "Mean-Var target Risk",
-     ylab = "Expected Return",
-     xlim = range(res[, "risk"]) * c(0.98, 1.02),
-     main = "Efficient Frontier (No short selling)")
+plot(
+  res[, "risk"],
+  res[, "ret"],
+  type = "l",
+  col = "red",
+  lwd = 1,
+  xlab = "Mean-Var target Risk",
+  ylab = "Expected Return",
+  xlim = range(res[, "risk"]) * c(0.98, 1.02),
+  main = "Efficient Frontier (No short selling)"
+)
 grid()
 i_gmv <- which.min(res[, "risk"])
 
-lines(res[i_gmv:nrow(res), "risk"],
-      res[i_gmv:nrow(res), "ret"],
-       col = "darkgreen",
-      lwd = 2)
+lines(
+  res[i_gmv:nrow(res), "risk"],
+  res[i_gmv:nrow(res), "ret"],
+  col = "darkgreen",
+  lwd = 2
+)
 asset_cols <- c("red", "blue", "orange", "purple", "brown")
 points(
   sqrt(diag(cov_matrix_a)),
@@ -666,14 +711,18 @@ points(
   col = asset_cols
 )
 
-text(sqrt(diag(cov_matrix_a)), mean_returns_a,
-     labels = names(mean_returns_a),
-     pos = 4, cex = 0.9,
-     col = asset_cols)
-
+text(
+  sqrt(diag(cov_matrix_a)),
+  mean_returns_a,
+  labels = names(mean_returns_a),
+  pos = 4,
+  cex = 0.9,
+  col = asset_cols
+)
 
 ```
 
+## Q2c
 
 
 
@@ -765,6 +814,9 @@ $$
 Answers: $\mathbb{E}[R_{2}] =$ `r fmt_trunc_ellip(r2_mu_bar)`, $\text{Var}(R_{2})=$ `r fmt_trunc_ellip(r2_var)`
 ::: 
 :::
+
+Point to note: The first two moments about the mean of asset one and asset two
+(the mean and the variance) are the same.
 
 ## Use **R** to estimate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. _[5 marks]_ {#qthreePtB}
 
@@ -1446,6 +1498,8 @@ BE note: have made above table. Not sure about point below regarding asset 2 hav
 - Probably also want to mention CDFs crossing - so no one asset clearly less or more risky than the other
 - Do we want to mention cross-over point? Think it's ~ -0.05777418
 - So this means for any target return higher than about -5.8%, Asset 1 is safer and for any target return lower than -5.8%, Asset 2 is safer?
+- Or in other words: Asset 1 has a risk of crashing (left tail) and asset 2 has
+  a 'jackpot chance' (right tail).
 
 ```{r Q3-cross-over-point, echo=TRUE}
 find_crossing <- function(L) {
@@ -1491,6 +1545,11 @@ TBI -->
 \newpage
 \section*{Appendices}
 \addcontentsline{toc}{section}{Appendices}
+
+% --- restore default section numbering in the appendix ---
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
 ```
 
 # (APPENDIX) Appendices {-}
@@ -1622,6 +1681,205 @@ if (knitr::is_html_output()) {
 }
 ```
 
+## Examining \@ref(qthreePtG) through the lens of utility
+
+Idea: While the probability density functions and cumulative distribution
+functions visualised above describe the statistical properties of the
+returns, they do not prescribe a decision. To choose between Asset 1
+and Asset 2, we must map these returns to an investor's satisfaction
+using utility functions.
+
+We evaluate the decision using the three standard models covered in SMM068: Quadratic, Logarithmic, and Power.
+
+As a brief recap, a higher utility score is better as our goal is always to
+maximise expected utility.
+
+### Quadratic utility
+
+Quadratic utility assumes the investor cares only about the expected return and the variance. It penalizes volatility regardless of whether that volatility comes from upside or downside moves. The function is defined as:
+
+$$
+U(R) = R - \frac{k}{2}R^{2}
+$$
+Where $k$ represents risk aversion.
+
+<!-- prettier-ignore -->
+\begin{align*} 
+U(R) &= R - \frac{k}{2}R^{2} \\
+\mathbb{E}\big[U(R)\big] &= \mathbb{E}\left[ R - \frac{k}{2}R^{2} \right] \\
+&= \mathbb{E}\left[ R \right] - \frac{k}{2}\mathbb{E}\left[R^{2} \right] \\
+&= \mathbb{E}\left[ R \right] - \frac{k}{2}\left(\text{Var}(R) - (\mathbb{E}[R])^2 \right)
+\end{align*}
+
+So for our assets, where $\mathbb{E}[R_1] = \mathbb{E}[R_2] = 0.06$ and $\text{Var}(R_1) = \text{Var}(R_2) = 0.0244$, the quadratic utility function will be identical for both assets.
+
+### Logarithmic and power utility (CRRA)
+
+Logarithmic utility ($\gamma = 1$) is the baseline for rational growth (often associated with the Kelly Criterion). It assumes wealth cannot drop to zero, and risk aversion adjusts naturally with wealth:
+
+$$
+U(R)=\ln(1+R)
+$$
+
+A power utility function allows one to fine-tune the investor's risk personality using the coefficient $\gamma$ (gamma):
+
+$$
+U(R) = \frac{(1+R)^{1-\gamma}}{1-\gamma}
+$$
+
+Where $\gamma>1$ represents one being risk averse and $\gamma<1$ represents one being risk seeking. We can observe how increasing $\gamma$ (representing higher risk aversion) affects the preference for Asset 2 due to its positive skewness.
+
+### Comparative analysis
+
+The table below consolidates the decision-making process using exact integral calculations (eliminating simulation noise) across our key utility frameworks.
+
+```{r exact-utility-table, echo=FALSE, warning=FALSE, message=FALSE}
+# BE note: move up if we keep this section
+library(tidyverse)
+
+# 1. PDF for Asset 2 (Needed for integration)
+pdf_r2 <- function(x) {
+  r2_p1 * dnorm(x, r2_mu1, r2_sd1) + r2_p2 * dnorm(x, r2_mu2, r2_sd2)
+}
+
+# 2. Dynamic Utility Function Generator
+get_crra_func <- function(gamma) {
+  if (abs(gamma - 1) < 1e-6) {
+    return(function(x) log(1 + x))
+  } else {
+    return(function(x) ((1 + x)^(1 - gamma)) / (1 - gamma))
+  }
+}
+
+# 3. Exact Integration Utility Calculator
+calc_exact_utility <- function(asset_type, gamma) {
+  utility_func <- get_crra_func(gamma)
+  if (asset_type == "R1") {
+    integrand <- function(x) { utility_func(x) * dnorm(x, r1_mu, r1_sd) }
+  } else {
+    integrand <- function(x) { utility_func(x) * pdf_r2(x) }
+  }
+  # Integrate with safe limits to avoid singularity at -1
+  return(integrate(integrand, lower = -0.99, upper = 5)$value)
+}
+
+# --- Calculate Scores ---
+
+# 1. Quadratic (Algebraic Exact, assuming k = 2)
+k_quad <- 2
+r1_sec_mom <- r1_sd^2 + r1_mu^2
+r2_sec_mom <- (r2_p1 * (r2_sd1^2 + r2_mu1^2)) + (r2_p2 * (r2_sd2^2 + r2_mu2^2))
+
+score_r1_quad <- r1_mu - (k_quad / 2) * r1_sec_mom
+score_r2_quad <- (r2_p1 * r2_mu1 + r2_p2 * r2_mu2) - (k_quad / 2) * r2_sec_mom
+
+# 2. CRRA Scores (Gamma 1, 3, 5, 10)
+gammas <- c(1, 3, 5, 10)
+crra_scores <- map_dfr(gammas, function(g) {
+  tibble(
+    Model = "Power (CRRA)",
+    Assumption = ifelse(g == 1, "Gamma = 1 (Logarithmic)", paste0("Gamma = ", g)),
+    R1 = calc_exact_utility("R1", g),
+    R2 = calc_exact_utility("R2", g)
+  )
+})
+
+# Combine and Build Table
+results <- bind_rows(
+  tibble(Model = "Quadratic", Assumption = "k = 2", R1 = score_r1_quad, R2 = score_r2_quad),
+  crra_scores
+) %>%
+  mutate(
+    Diff = R2 - R1,
+    Decision = case_when(
+      abs(Diff) < 1e-9 ~ "Indifferent",
+      Diff > 0 ~ "Choose Asset 2 (Skewed)",
+      TRUE ~ "Choose Asset 1 (Normal)"
+    )
+  )
+
+results %>%
+  select(Model, Assumption, R1, R2, Decision) %>%
+  kable(
+    digits = 5,
+    caption = "Comparison of exact expected utility scores (no simulation noise)",
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    latex_options = "hold_position"
+  ) %>%
+  column_spec(5, bold = TRUE)
+```
+
+### Visualising the decision boundary (power utility function)
+
+By calculating the difference in expected utility $(\mathbb{E}\big[U(R_2)\big] - \mathbb{E}\big[U(R_1)\big])$ continuously across a spectrum of risk aversion, we can see exactly how the preference for positive skewness compounds as $\gamma$ increases.
+(!ref - link paper here by Iqbal or collaborators in which this approach was
+used).
+
+```{r skewness-preference-plot, echo=FALSE, warning=FALSE, message=FALSE}
+# 1. PDF for Asset 2 (Mixture)
+pdf_r2 <- function(x) {
+  r2_p1 * dnorm(x, r2_mu1, r2_sd1) + r2_p2 * dnorm(x, r2_mu2, r2_sd2)
+}
+
+# 2. Dynamic Utility Function Generator
+get_crra_func <- function(gamma) {
+  if (abs(gamma - 1) < 1e-6) {
+    return(function(x) log(1 + x))
+  } else {
+    return(function(x) ((1 + x)^(1 - gamma)) / (1 - gamma))
+  }
+}
+
+# 3. Exact Integration Utility Calculator
+calc_exact_utility <- function(asset_type, gamma) {
+  utility_func <- get_crra_func(gamma)
+  if (asset_type == "R1") {
+    integrand <- function(x) { utility_func(x) * dnorm(x, r1_mu, r1_sd) }
+  } else {
+    integrand <- function(x) { utility_func(x) * pdf_r2(x) }
+  }
+  
+  # Set lower = -0.65. This covers >4 standard deviations of our assets 
+  # but keeps (1+x) large enough to prevent numerical explosion at gamma = 10.
+  return(integrate(integrand, lower = -0.65, upper = 2, subdivisions = 2000)$value)
+}
+
+# --- Visualising the Decision Boundary ---
+
+# Gamma Sequence (0 to 10)
+gamma_seq <- seq(0, 10, by = 0.1)
+
+# Calculate Difference for each Gamma
+plot_data <- map_dfr(gamma_seq, function(g) {
+  eu1 <- calc_exact_utility("R1", g)
+  eu2 <- calc_exact_utility("R2", g)
+  tibble(Gamma = g, Diff = eu2 - eu1)
+})
+
+# Plot
+ggplot(plot_data, aes(x = Gamma, y = Diff)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+  geom_line(color = "darkblue", linewidth = 1.2) +
+  geom_ribbon(aes(ymin = 0, ymax = pmax(Diff, 0)), fill = "blue", alpha = 0.1) +
+  geom_ribbon(aes(ymin = pmin(Diff, 0), ymax = 0), fill = "red", alpha = 0.1) +
+  annotate(
+    "text", x = 5, y = max(plot_data$Diff) * 0.75, 
+    label = "Prefer Asset 2 (Positive Skew)", color = "blue", fontface = "italic"
+  ) +
+  labs(
+    title = "The skewness preference",
+    subtitle = "Since mean and variance are equal, the curve shows the value of skewness",
+    x = "Risk aversion coefficient (gamma)",
+    y = "Utility advantage (EU_R2 - EU_R1)"
+  ) +
+  theme_bw()
+```
+
+
 # Reproducibility, accessibility & declarations (Gen-AI & word count?)
 
 <!-- BE note: taken out as we are submitting R file separately -->
@@ -1650,7 +1908,9 @@ and is not a comprehensive timeline of all contributions by group members.
 
 ## Generative AI Declaration
 
-Do we want to include this?
+Do we want to include this? - update: yes, asked Iqbal about this on 10/02/2026.
+
+Include this section.
 
 <!--
 Generative AI (GenAI) tools were used throughout this project to assist with

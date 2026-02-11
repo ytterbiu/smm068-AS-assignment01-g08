@@ -22,21 +22,26 @@ Making notes here for collaboration using rmd format:
 
 To be inserted.
 
-<!--
 The directory structure is as follows
 
 ```{bash}
 .
+├── CHANGELOG.md
+├── Q1.csv
+├── README.md
 ├── air.toml
-├── Coursework Group 7.pdf
-├── cs1-group07.ipynb
-├── cs1-group07.r
-├── cs1-group07.rmd
+├── answer.lua
+├── cm2-assessment01-group08.pdf
+├── cm2-assessment01-group08.rmd
+├── cm2-assessment01-group08.tex
+├── coursework_CM2_250120.pdf
 ├── fig
-│   ├── Element 1-1.svg
 │   ├── ...
-└── README.md
-``` -->
+├── preamble.tex
+├── references.bib
+├── smm068-AS-assignment01-g08.Rproj
+└── style.css
+```
 
 ## Contents
 
@@ -49,13 +54,13 @@ To be inserted.
 
 For R Markdown install core package:
 
-```r
+```{r}
 install.packages("rmarkdown")
 ```
 
 Additional packages used are
 
-```r
+```{r}
 # to be inserted / updated
 install.packages("ggplot2")
 install.packages("patchwork")
@@ -63,6 +68,60 @@ install.packages("kableExtra")
 ```
 
 - Optional packages: `htmltools` (required only if rendering to HTML)
+
+## Useful operations
+
+### Render outputs (HTML / PDF / Word)
+
+#### Render a single R Markdown file to multiple formats:
+
+```{r}
+rmarkdown::render("cm2-assessment01-group08.Rmd", output_format = "all")
+```
+
+#### Render to a specific format:
+
+```{r}
+rmarkdown::render("cm2-assessment01-group08.Rmd", output_format = "html_document")
+rmarkdown::render("cm2-assessment01-group08.Rmd", output_format = "pdf_document")
+rmarkdown::render("cm2-assessment01-group08.Rmd", output_format = "word_document")
+```
+
+#### Render everything in a directory (not used here):
+
+```{r}
+files <- list.files(pattern = "\\.Rmd$", ignore.case = TRUE)
+for (f in files) rmarkdown::render(f, output_format = "all")
+```
+
+### Extract R code from an Rmd (purl)
+
+Create a `.R` script from an `.Rmd`:
+
+```{r}
+knitr::purl("report.Rmd", documentation = 0)
+```
+
+### Debug: find non-ASCII characters
+
+Useful if PDF/LaTeX builds start to fail without clear errors and if you suspect
+things like smart quotes or odd dashes.
+
+```{r}
+tools::showNonASCIIfile("report.Rmd")
+```
+
+### Run all code chunks (for debugging)
+
+```{r}
+knitr::knit("report.Rmd")
+```
+
+### Session Info
+
+```{r}
+sessionInfo()
+```
 
 ## Acknowledgements
 

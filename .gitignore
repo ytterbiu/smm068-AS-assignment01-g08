@@ -38,12 +38,7 @@
 peer-assessment/*
 
 # cached files
-/cs1-group07_cache/*
-251119-cs1-group07.rmd
 figure-testing.R
-appendix-figs-for-amogh.R
-c_nasdaq_code_for_gemini.r
-cs1-group07-submitted.r
-cs1-group07.rmd
 HSI20180101to20241231.csv
-dashboard/rsconnect/shinyapps.io/3enji/SMM047-202526-Group07-Dashboard.dcf
+*.dcf
+20260209-power-utility-theory-query.png
