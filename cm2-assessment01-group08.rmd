@@ -3,7 +3,7 @@ title: "Computational Frameworks for Portfolio Construction and Risk Assessment"
 subtitle: "SMM068 (2025-26) Group Coursework 01 - Group 08"
 author:
   - "Benjamin Evans"
-  - "Basmah K"
+  - "Basmah Khan"
   - "Bong Su Kil"
   - "Ardi Wira Sudarmo"
 date: "`r format(Sys.Date(), '%d %B %Y')`"
