@@ -134,6 +134,7 @@ library(quadprog) # to solve a quadratic programming problem
 library(scales) # to express portfolio weights as percentage
 library(pander)
 
+
 ```
 
 ```{r html-app, echo=FALSE, results='asis', eval=knitr::is_html_output(), purl=FALSE}
@@ -275,7 +276,9 @@ fmt_trunc_ellip <- function(
 # Five insurance-related stocks are chosen
 # The specific choice of stocks is flexible, as the primary objective
 
-stocks <- sort(c("TRV", "PGR", "ALL", "CB", "AIG"))
+#stocks <- sort(c("TRV", "PGR", "ALL", "CB", "AIG"))
+stocks <- sort(c("MSFT", "JNJ", "NEE", "AIG", "GS"))
+
 start_date <- as.Date("2023-01-01")
 end_date <- as.Date("2025-12-31")
 
@@ -335,11 +338,12 @@ Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
 - **URL if available:** https://finance.yahoo.com
 
 - **Name and ticker code for stocks**
-  - TRV (The Travelers Companies, Inc.)
-  - PGR (Progressive Corporation)
-  - ALL (Allstate Corporation)
-  - CB (Chubb Limited)
-  - AIG (American International Group, Inc.)
+  - MSFT (Microsoft)
+  - JNJ (Johnson & Johnson)
+  - NEE (NextEra Energy, Inc)
+  - AIG (American International Group, Inc)
+  - GS (The Goldman Sachs Group, Inc.)
+
 
 - **Date range:** 1 January 2023 – 31 December 2025
 
@@ -480,7 +484,7 @@ px <- prices[, -1]
 
 #%returns
 data1 <- lapply(px, function(x) {
-  ROC(as.numeric(x), type = "discrete") * 100   # % 단순수익률 (<- simple return?)
+  ROC(as.numeric(x), type = "discrete") * 100  
 })
 
 ret1 <- as.data.frame(do.call(cbind, data1))
@@ -513,7 +517,7 @@ cov_matrix_d   <- cov(R_pct)
 sd_d           <- sqrt(diag(cov_matrix_d))
 
 # BE note to check: why factors of 3/100?
-mean_returns_a <- mean_returns_d * nrow(R_pct) / 3/100
+mean_returns_a <- mean_returns_d * nrow(R_pct) /3/100
 cov_matrix_a <- cov_matrix_d* nrow(R_pct) / 3/100
 sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) / 3/100)
 N_return <- length(mean_returns_a)
