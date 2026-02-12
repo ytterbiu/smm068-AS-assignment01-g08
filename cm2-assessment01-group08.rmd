@@ -344,7 +344,6 @@ Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
   - AIG (American International Group, Inc)
   - GS (The Goldman Sachs Group, Inc.)
 
-
 - **Date range:** 1 January 2023 – 31 December 2025
 
 - **Price label used:** Adjusted closing price
@@ -484,7 +483,7 @@ px <- prices[, -1]
 
 #%returns
 data1 <- lapply(px, function(x) {
-  ROC(as.numeric(x), type = "discrete") * 100  
+  ROC(as.numeric(x), type = "discrete") * 100
 })
 
 ret1 <- as.data.frame(do.call(cbind, data1))
@@ -536,15 +535,14 @@ Daily returns were calculated from the adjusted closing prices of the five stock
 ::: {.answer}
 Answer:
 
-`r sprintf("%s %.3f",colnames(ret1)[2], mean_returns_a[1]*100)`% (3dp) 
-`r sprintf("%s %.3f",colnames(ret1)[3], mean_returns_a[2]*100)`% (3dp) 
-`r sprintf("%s %.3f",colnames(ret1)[4], mean_returns_a[3]*100)`% (3dp) 
-`r sprintf("%s %.3f",colnames(ret1)[5], mean_returns_a[4]*100)`% (3dp) 
+`r sprintf("%s %.3f",colnames(ret1)[2], mean_returns_a[1]*100)`% (3dp)
+`r sprintf("%s %.3f",colnames(ret1)[3], mean_returns_a[2]*100)`% (3dp)
+`r sprintf("%s %.3f",colnames(ret1)[4], mean_returns_a[3]*100)`% (3dp)
+`r sprintf("%s %.3f",colnames(ret1)[5], mean_returns_a[4]*100)`% (3dp)
 `r sprintf("%s %.3f",colnames(ret1)[6], mean_returns_a[5]*100)`% (3dp)
 
 :::
 :::
-
 
 <!-- # ```{r, echo=FALSE} -->
 <!-- # df <- data.frame( -->
@@ -729,8 +727,6 @@ text(
 ```
 
 ## Q2c
-
-
 
 # Asset risk theory {#qthree}
 
@@ -1707,6 +1703,7 @@ Quadratic utility assumes the investor cares only about the expected return and 
 $$
 U(R) = R - \frac{k}{2}R^{2}
 $$
+
 Where $k$ represents risk aversion.
 
 <!-- prettier-ignore -->
@@ -1848,8 +1845,8 @@ calc_exact_utility <- function(asset_type, gamma) {
   } else {
     integrand <- function(x) { utility_func(x) * pdf_r2(x) }
   }
-  
-  # Set lower = -0.65. This covers >4 standard deviations of our assets 
+
+  # Set lower = -0.65. This covers >4 standard deviations of our assets
   # but keeps (1+x) large enough to prevent numerical explosion at gamma = 10.
   return(integrate(integrand, lower = -0.65, upper = 2, subdivisions = 2000)$value)
 }
@@ -1873,7 +1870,7 @@ ggplot(plot_data, aes(x = Gamma, y = Diff)) +
   geom_ribbon(aes(ymin = 0, ymax = pmax(Diff, 0)), fill = "blue", alpha = 0.1) +
   geom_ribbon(aes(ymin = pmin(Diff, 0), ymax = 0), fill = "red", alpha = 0.1) +
   annotate(
-    "text", x = 5, y = max(plot_data$Diff) * 0.75, 
+    "text", x = 5, y = max(plot_data$Diff) * 0.75,
     label = "Prefer Asset 2 (Positive Skew)", color = "blue", fontface = "italic"
   ) +
   labs(
@@ -1884,7 +1881,6 @@ ggplot(plot_data, aes(x = Gamma, y = Diff)) +
   ) +
   theme_bw()
 ```
-
 
 # Reproducibility, accessibility & declarations (Gen-AI & word count?)
 
@@ -1914,11 +1910,6 @@ and is not a comprehensive timeline of all contributions by group members.
 
 ## Generative AI Declaration
 
-Do we want to include this? - update: yes, asked Iqbal about this on 10/02/2026.
-
-Include this section.
-
-<!--
 Generative AI (GenAI) tools were used throughout this project to assist with
 project planning, methodological validation, and debugging. In practice, these
 tools functioned as an additional technical team member, providing immediate
@@ -1926,12 +1917,12 @@ feedback, troubleshooting code, and challenging statistical assumptions.
 
 ### Tools Used
 
-Google Gemini 2.5 Pro (Deep Research), ChatGPT 5
+Google Gemini 3 Pro (Deep Research), ChatGPT 5.2
 
 ### Prompts used
 
-The GenAI tools were provided with the 'Coursework Group 7.pdf' and extracts
-from our R code.
+The GenAI tools were provided with the 'coursework_CM2_250120.pdf' file and
+extracts from our `R` code.
 
 A non-exhaustive list of prompts used is shown below. We opted to include at
 least one example of each _type_ of prompt used, rather than a list of all
@@ -1940,15 +1931,12 @@ by side?' and 'How to remove grey background on a ggplot', we would include only
 the first of these in the list below, as both relate to plotting issues (& are
 similar to 'querying' with a traditional search engine).
 
-- "Can you help with outlining the steps for this project."
 - "...the top of both graphs in r are slightly different. (Pasting R code.) Can
   this be fixed for the plot area?"
 - "Help phrasing this in a simple and accessible way - remove any jargon &
   identify the key points"
 - "How can this error be tracked down in an rmd file? ! Text line contains an
   invalid character. l.1 ^^@^^@..."
-- "Are there specific assumptions for the Kruskal-Wallis test regarding variance
-  and where is this explanation in Nonparametric Statistical Methods?"
 
 ### Use of GenAI outputs & subsequent revisions
 
@@ -1956,14 +1944,6 @@ The GenAI tools served as a "consultant" member of the group. Notably, the AI
 output:
 
 - Helped debug plotting issues.
-- Highlighted potential statistical pitfalls, such as the "ANOVA trap"
-  (normality violations) and the importance of ordering data cleansing steps
-  correctly.
-- Suggested appropriate non-parametric alternatives (Kruskal-Wallis,
-  Mann-Whitney U) when diagnostic plots revealed that parametric assumptions
-  were violated.
-- Recommended specific R packages (nortest, e1071) and functions (ad.test,
-  kruskal.test) best suited for each task.
 - Commented on the structure of R code snippets and the report structure.
 
 ### Changes made:
@@ -1980,4 +1960,4 @@ implementation. For example:
 
 While GenAI was treated as a collaborator, the final analysis, statistical
 interpretation, and the written content of this report were generated and
-verified by the (human) group members. -->
+verified by the (human) group members.
