@@ -644,7 +644,8 @@ sd_d           <- sqrt(diag(cov_matrix_d))
 # BE note to check: why factors of 3/100?
 # /3 to get 1 year's worth of data
 # then *100 to get 1 year as a %
-mean_returns_a <- mean_returns_d * nrow(R_pct) /3/100
+# - Wait for Ardi's attempt before editing...
+mean_returns_a <- mean_returns_d * nrow(R_pct) / 3/100
 cov_matrix_a <- cov_matrix_d* nrow(R_pct) / 3/100
 sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) / 3/100)
 N_return <- length(mean_returns_a)
