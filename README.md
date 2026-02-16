@@ -1,7 +1,7 @@
 # MSc AS - Term 2: SMM068 Financial Economics — Group Project
 
-Term 2 group project for Probability and Mathematical Statistics (50% of
-coursework grade - 10% of module).
+Term 2 group project 01 (out of 2 total this term) for Financial Economics
+(50% of coursework grade - 10% of module).
 
 - Group 08 working directory
 - HTML report: https://ytterbiu.github.io/smm068-AS-assignment01-g08/

@@ -1267,6 +1267,100 @@ Answer: `r sprintf("%.3f", results_r2["T2"]*100)`% (3dp)
 :::
 :::
 
+### Comments
+
+The results from part \@ref(qthreePtC) and \@ref(qthreePtD) are summarised 
+in Table \@ref(tab:qthr-pt-CD-summary).
+
+```{r qthr-pt-CD-summary, echo=FALSE}
+# 1. Prepare data
+shortfall_transposed <- data.frame(
+  Label = c("Asset 1", "Asset 2"),
+  T1 = c(results_r1[1], results_r2[1]),
+  T2 = c(results_r1[2], results_r2[2])
+)
+
+# 2. Format and generate table
+shortfall_transposed %>%
+  # Format as percentages with 2 decimal places (sprintf is cleaner than round here)
+  mutate(
+    across(
+      starts_with("T"),
+      ~ paste0(formatC(.x * 100, digits = 2, format = "f"))
+    )
+  ) %>%
+  kable(
+    booktabs = TRUE,
+    escape = FALSE,
+    align = "lcc", # left align text & centre align numbers
+    col.names = c("Asset", "0\\%", "-10\\%"),
+    caption = "Summary of shortfall probabilities for assets 1 and 2. Note that the probabilities are given as percentages."
+  ) %>%
+  # Add the grouped header
+  add_header_above(c(" " = 1, "Shortfall probability (%)" = 2)) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    latex_options = "hold_position"
+  )
+```
+
+Table \@ref(tab:qthr-pt-CD-extension) extends this analysis to a broader range
+of thresholds. This comparison reveals that while Asset 2 has a higher
+probability of moderate losses (returns between roughly −5.77% and 0%), the
+relationship inverts in the extreme tail.
+
+Asset 1 carries a higher probability of severe drawdowns (e.g., returns <−15%),
+demonstrating that despite identical variances, Asset 1 presents a greater
+danger of catastrophic loss.
+
+```{r qthr-pt-CD-extension, echo=FALSE}
+thresholds <- c(
+  T1 = 0,
+  T2 = -0.05,
+  T3 = -0.0577,
+  T4 = -0.10,
+  T5 = -0.15,
+  T6 = -0.20,
+  T7 = -0.25,
+  T8 = -0.50
+)
+
+results_r1 <- pnorm(thresholds, mean = r1_mu, sd = r1_sd)
+results_r2 <- sapply(thresholds, calc_shortfall_r2)
+
+shortfall_transposed <- data.frame(
+  Asset = c("R1", "R2"),
+  rbind(results_r1, results_r2)
+)
+
+shortfall_long <- data.frame(
+  # Threshold = names(thresholds),
+  Value = thresholds,
+  R1 = results_r1,
+  R2 = results_r2
+)
+
+shortfall_long %>%
+  mutate(across(
+    c(R1, R2),
+    ~ formatC(.x * 100, format = "g", digits = 3, flag = "#")
+  )) %>%
+  kable(
+    booktabs = TRUE,
+    escape = FALSE,
+    linesep = c("", "", "", "\\addlinespace"),
+    align = "llcc",
+    col.names = c("Label", "Threshold Value", "R1 (\\%)", "R2 (\\%)"),
+    caption = "Shortfall probabilities: Asset 2 has a higher probability of any loss, but beyond the crossover (approximately -5.77\\%) Asset 1 has the larger tail probability."
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    latex_options = "hold_position"
+  )
+```
+
 ```{=latex}
 \newpage
 ```
@@ -1278,7 +1372,7 @@ Answer: `r sprintf("%.3f", results_r2["T2"]*100)`% (3dp)
 ## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes. _[3 marks]_ {#qthreePtE}
 
 The probability density functions of returns for assets 1 and 2 are shown in
-Figure \@ref(fig:Q3-part-e-ggplot).
+Figure \@ref(fig:Q3-part-e-ggplot).  
 
 ```{r Q3-part-e-ggplot, eval = TRUE, echo = FALSE, fig.width=7, fig.height=6.0, fig.cap = paste("Comparative analysis of return distributions. Top: Probability density functions (PDFs) for Asset 1 ($R_1$, solid green) and Asset 2 ($R_2$, dotted orange). Vertical dotted lines indicate the crossover points where the densities are equal (returns of approximately ", paste(formatC(crossovers[1]*100, format="fg", digits=1), sep="","%,"), paste(formatC(crossovers[2]*100, format="fg", digits=1), sep="","%"), " and ", paste(formatC(crossovers[3]*100, format="fg", digits=1), sep="","%)."), "Bottom: The density difference ($R_2−R_1$). Positive values indicate regions where Asset 2 has a higher probability of occurrence, while negative values indicate regions where Asset 1 is more probable."), fig.pos='!ht'}
 
@@ -1452,13 +1546,13 @@ returns between
 upside tail region above
 `r paste0(formatC(crossovers[3]*100, format="fg", digits=1),"%")`. The
 'barbell' profile of Asset 2 results in a higher utility theory for all
-_typical_ risk-averse investors[^utility-theory] and it provides a lower risk
+_typical_ risk-averse investors[^utility-theory], providing a lower risk
 of large losses and the exclusive potential for large windfalls, strictly
 dominating Asset 1 in the tails.
 
-```{=latex}
-\newpage
-```
+<!-- ```{=latex} -->
+<!-- \newpage -->
+<!-- ``` -->
 
 <!-- # ================================================================== -->
 <!-- # Q3(f) plot the cdfs of returns for assets 1 and 2 on the same axes.
@@ -1468,7 +1562,7 @@ dominating Asset 1 in the tails.
 
 <!-- # !BE note: this code is a mess - clean before submission. -->
 
-```{r Q3-final-combined-plot, eval=TRUE, echo=FALSE, fig.width=7, fig.height=6.0, fig.cap="Top: PDFs. Middle: CDFs with crossover points (equal shortfall probabilities). Bottom: CDF difference (R2 - R1); positive means higher shortfall probability for R2 at that x.", fig.pos='!ht', message=FALSE, warning=FALSE}
+```{r Q3-part-f-ggplot, eval=TRUE, echo=FALSE, fig.width=7, fig.height=6.0, fig.cap="Top: PDFs. Middle: CDFs with crossover points (equal shortfall probabilities). Bottom: CDF difference (R2 - R1); positive means higher shortfall probability for R2 at that x.", fig.pos='!ht', message=FALSE, warning=FALSE}
 x_vals <- seq(-0.6, 0.6, by = 0.001)
 
 # --- distributions
@@ -1607,13 +1701,15 @@ p3 <- p3 +
 (p2 / p3) + plot_layout(heights = c(1.2, 1.2))
 ```
 
-See \S\@ref(apd-utility-theory) for a full evaluation of both assets using utility theory.
+The intersection of the cumulative distribution functions at x $\approx$ 5.77%
+illustrates that neither asset exhibits first-order stochastic dominance over
+the other. To the left of this crossover, the curve for Asset 1 lies above Asset
+2, indicating that Asset 1 has a higher probability of generating severe losses
+(returns worse than −5.77%). To the right of the crossover, Asset 2's curve
+rises above Asset 1, indicating that Asset 2 is more likely to generate small to
+moderate losses. While Asset 2 is more likely to result in a return near zero,
+Asset 1 carries the distinct tail risk of catastrophic drawdown.
 
-Whilst the cumulative distribution function makes sense statistically, it can be
-confusing from a finance perspective. Instead we can look at the survival
-functions (which is the inverse of the previous figure). In the survival
-function a larger value is 'better' or the probability that the returns are
-greater than this value.
 
 ```{=latex}
 \newpage
@@ -1628,93 +1724,30 @@ greater than this value.
 Based on your answers to parts Q3a–Q3f above, comment on the risk involved in
 asset 2, compared to asset 1. _[4 marks]_
 
-While both assets share identical Mean and Variance, their risk profiles differ
-significantly in the tails. Asset 1 carries higher tail risk (higher
+Assets 1 & 2 possess a different risk profile, despite their identical means and
+variances. Figure \@ref(fig:Q3-part-e-ggplot) reveals that Asset 1 is symmetric
+and Asset 2 is a positively skewed mixture with a higher probability of small
+losses (e.g., falling short of a 0% or −5% benchmark). However, Asset 1
+dominates the extreme left tail (returns < −5.8%), and carries higher
+probability of severe losses (Figure \@ref(fig:Q3-part-f-ggplot)). Asset 1 is a
+riskier holding for a risk-averse investor due to its greater exposure to deep
+downside events[^utility-skew].
+
+---
+
+Drafts below:
+
+
+While both assets share identical Mean and Variance, their risk profiles differ in the tails. Asset 1 carries higher tail risk (higher
 probability of losses below the crossover (value)
 calculated in (ref), whereas Asset 2 entails a higher frequency of small losses.
 A risk-averse investor should prefer Asset 2
 due to its bounded downside and positive skewness, while a Mean-Variance
 investor would view them as equivalent (see (appendix ref) for utility proofs).
 
-```{r Q3-part-g, echo=FALSE}
-shortfall_transposed <- data.frame(
-  Asset = c("R1", "R2"),
-  T1 = c(results_r1[1], results_r2[1]),
-  T2 = c(results_r1[2], results_r2[2])
-)
-
-shortfall_transposed %>%
-  mutate(
-    across(starts_with("T"), ~paste0(round(.x * 100, 3)))
-  ) %>%
-  kable(
-    booktabs = TRUE,
-    caption = "Shortfall probabilities...*! (values given as percentages)",
-    align = "lcc",
-    col.names = c("Asset", "Threshold $T_1 = 0$", "Threshold $T_2 = -0.1$"),
-    escape = FALSE
-  ) %>%
-  kable_styling(full_width = FALSE, position = "center")
-```
 
 BE note: quick test - refine later~
 
-```{r Q3-testing, echo=FALSE}
-thresholds <- c(
-  T1 = 0,
-  T2 = -0.05,
-  T3 = -0.1,
-  T4 = -0.15,
-  T5 = -0.2,
-  T6 = -0.25,
-  T7 = -0.5,
-  T8 = -0.75
-)
-
-results_r1 <- pnorm(thresholds, mean = r1_mu, sd = r1_sd)
-results_r2 <- sapply(thresholds, calc_shortfall_r2)
-
-shortfall_transposed <- data.frame(
-  Asset = c("R1", "R2"),
-  rbind(results_r1, results_r2)
-)
-# shortfall_transposed %>%
-#   mutate(
-#     across(where(is.numeric), ~ sprintf("%.3f", .x * 100))
-#   ) %>%
-#   kable(
-#     booktabs = TRUE,
-#     caption = "Shortfall probabilities at various thresholds (values given as percentages)",
-#     align = "lccccc",
-#     col.names = c("Asset", paste0("$", names(thresholds), " = ", thresholds, "$")),
-#     escape = FALSE
-#   ) %>%
-#   kable_styling(full_width = FALSE, position = "center", latex_options = "hold_position") %>%
-#   column_spec(1, bold = TRUE) %>%
-#   row_spec(0, bold = TRUE)
-
-shortfall_long <- data.frame(
-  Threshold = names(thresholds),
-  Value = thresholds,
-  R1 = results_r1,
-  R2 = results_r2
-)
-
-shortfall_long %>%
-  mutate(across(
-    c(R1, R2),
-    ~ formatC(.x * 100, format = "g", digits = 3, flag = "#")
-  )) %>%
-  kable(
-    booktabs = TRUE,
-    caption = "Shortfall probabilities - note how probability of getting a loss is greater for asset 2, but the probability of getting a huge loss (after ~5p.c. loss) is more likely for asset 1)",
-    col.names = c("Label", "Threshold Value (raw)", "R1 (percent)", "R2 (percent)"),
-    align = "llcc"
-  ) %>%
-  kable_styling(full_width = FALSE, latex_options = "hold_position")
-```
-
-BE note: have made above table. Not sure about point below regarding asset 2 having a higher risk of extreme outcomes (it's more likely to lose money generally, but less likely for extreme events, no?)
 
 - Answer might want us to link this to investor types (Asset 1 linked to not liking any type of risk vs R2 being more comfortable with some minor volatility risk, but wanting lower risk of getting completely wiped out)
 - Probably also want to mention CDFs crossing - so no one asset clearly less or more risky than the other
@@ -2069,4 +2102,11 @@ While GenAI was treated as a collaborator, the final analysis, statistical
 interpretation, and the written content of this report were generated and
 verified by the (human) group members.
 
-[^utility-theory]: Described in more detail in the appendix (\S\@ref(apd-utility-theory)).
+[^utility-theory]: 
+    Described in more detail in the appendix (\S\@ref(apd-utility-theory)).
+
+[^utility-skew]: 
+    This is demonstrated in the appendix (\S\@ref(apd-utility-theory) and Table
+    \@ref(tab:exact-utility-table)), a CRRA utility function with $\gamma > 0$
+    penalises the negative skewness of Asset 1, mathematically confirming it as
+    the inferior choice for risk-averse investors.
