@@ -854,8 +854,40 @@ text(
 
 ## Q2c
 
-- List to be inserted here...
+- Bs
 
+
+ 1. **Establish the investor's objectives and the single-period horizon**
+   : Mean-variance portfolio theory is a single-step framework, so the time period and goal must be specified
+   
+ 2. **Clarify the investor's attitude to risk (risk-averse and non-satiated)**
+   : At a given level of risk they prefer higher return, and at a given return they prefer lower variance.
+ 
+ 3. **Determine the investor's optimal portfolio using indifference curves.**
+   : No other portfolio offers higer return for the same variance or lower variance for the same return
+ 
+ 4. **Restrict attention to the efficient frontier only.**
+   : An efficient portfolio is one for which no other portfolio offers higher return for the same variance( or lower variance for the same return)
+   
+ 5.	**Recognise that all expected returns, variances and covariances are assumed known.**
+   : Application requires estimates of expected returns and the variance-covariance structure, which may be unstable.
+ 
+ 6. **link the choice to utility / indifference curves.**
+   : The optimal portfolio is obtained by selecting the efficient portfolio that maximises expected utility
+  
+ 7.**Be explicit about constraints (eg no short-selling, fully invested)**
+   : Constraints can materially alter the feasible set and may produce corner solutions on the frontier.
+   
+ 8. **Discuss estimation error and the unreliability of historical inputs.**
+   : historical estimates may not predict future behaviour. Result can be sensitive to small changes in inputs.
+   
+ 9. **consider other important investment risks beyond variance.**
+  : Inflation, currency, reinvestment, marketability and credit risks may affect suitability.
+  
+10. **Acknowledge limitations and the need for review**
+  : Basic MPT ignores liabilities / actuarial risk : portfolios should be monitored and updated as conditions change
+ 
+ 
 ```{=latex}
 \newpage
 ```
