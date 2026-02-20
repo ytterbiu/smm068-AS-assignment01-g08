@@ -348,6 +348,8 @@ Download 3 years of daily prices for 5 U.S. stocks. [5 marks]
 
 - **Price label used:** Adjusted closing price
 
+- **Rationale:** TBI:
+
 ```{r Q1-table-for-html, include=knitr::is_html_output(), echo=FALSE, message=FALSE, warning=FALSE}
 if (knitr::is_html_output()) {
   datatable(
@@ -566,6 +568,14 @@ if (knitr::is_html_output()) {
 
 # Portfolio optimisation
 
+Note: average daily returns were converted to annualised units. (foot note here
+recognising alternative ways of doing this, but stating that this is the way we
+chose).
+
+$$
+z_{ann} = z_{daily} \times 252
+$$
+
 $$
 \begin{array}{ll}
 \hline
@@ -652,7 +662,17 @@ N_return <- length(mean_returns_a)
 
 ```
 
-## Q2(a)
+## Stock statistics Q2(a)
+
+In preparation for mean-variance portfolio optimization, estimate all required
+statistics for the 5 stocks whose price data you downloaded in Q1.
+
+- Required statistics include?
+- Mean:
+- Variance:
+- Skewness:
+- Kurtosis / excess kurtosis?:
+- Covariance table
 
 ### Ardi Q2a
 
@@ -661,7 +681,7 @@ I tidied up the computation of mean returns and covariance matrix a little bit.
 ```{r}
 
 df_day_returns <- prices |>
-  arrange(Date) |> 
+  arrange(Date) |>
   mutate(across(all_of(stocks), ~  .x / lag(.x) - 1 ))
 
 ```
@@ -679,14 +699,11 @@ ANNUALISED.FACTOR <- 252
 
 ```{r}
 
-# Annualised covariance matrix 
+# Annualised covariance matrix
 
 ( cov_matrix_a <- cov(as.matrix(df_day_returns[-1,-1])) * ANNUALISED.FACTOR )
 
 ```
-
-
-
 
 Daily returns were calculated from the adjusted closing prices of the five stocks. The expected returns were obtained by taking the average of the daily returns and the annualised.
 
@@ -740,7 +757,6 @@ cov_matrix_a
 
 Ardi's note:
 We should put the formulation of optimisation problem in the matrix form here in latex.
-
 
 ```{r Q2b-working, echo=FALSE}
 # ==============================================================================
@@ -890,42 +906,47 @@ text(
 
 ```
 
-## Q2c
+## Points to raise with investor
 
-- Bs
+An individual investor would like to invest in the 5 stocks and intends to use
+the efficient frontier that you computed above. List, in approximate descending
+order of importance, ten points that you will raise with the investor to help
+her construct her investment portfolio.
 
+Prior assumptions:
 
- 1. **Establish the investor's objectives and the single-period horizon**
-   : Mean-variance portfolio theory is a single-step framework, so the time period and goal must be specified
-   
- 2. **Clarify the investor's attitude to risk (risk-averse and non-satiated)**
-   : At a given level of risk they prefer higher return, and at a given return they prefer lower variance.
- 
- 3. **Determine the investor's optimal portfolio using indifference curves.**
-   : No other portfolio offers higer return for the same variance or lower variance for the same return
- 
- 4. **Restrict attention to the efficient frontier only.**
-   : An efficient portfolio is one for which no other portfolio offers higher return for the same variance( or lower variance for the same return)
-   
- 5.	**Recognise that all expected returns, variances and covariances are assumed known.**
-   : Application requires estimates of expected returns and the variance-covariance structure, which may be unstable.
- 
- 6. **link the choice to utility / indifference curves.**
-   : The optimal portfolio is obtained by selecting the efficient portfolio that maximises expected utility
-  
- 7.**Be explicit about constraints (eg no short-selling, fully invested)**
-   : Constraints can materially alter the feasible set and may produce corner solutions on the frontier.
-   
- 8. **Discuss estimation error and the unreliability of historical inputs.**
-   : historical estimates may not predict future behaviour. Result can be sensitive to small changes in inputs.
-   
- 9. **consider other important investment risks beyond variance.**
-  : Inflation, currency, reinvestment, marketability and credit risks may affect suitability.
-  
+-
+
+1.  **Establish the investor's objectives and the single-period horizon**
+    : Mean-variance portfolio theory is a single-step framework, so the time period and goal must be specified
+
+2.  **Clarify the investor's attitude to risk (risk-averse and non-satiated)**
+    : At a given level of risk they prefer higher return, and at a given return they prefer lower variance.
+
+3.  **Determine the investor's optimal portfolio using indifference curves.**
+    : No other portfolio offers higer return for the same variance or lower variance for the same return
+
+4.  **Restrict attention to the efficient frontier only.**
+    : An efficient portfolio is one for which no other portfolio offers higher return for the same variance( or lower variance for the same return)
+
+5.  **Recognise that all expected returns, variances and covariances are assumed known.**
+    : Application requires estimates of expected returns and the variance-covariance structure, which may be unstable.
+
+6.  **link the choice to utility / indifference curves.**
+    : The optimal portfolio is obtained by selecting the efficient portfolio that maximises expected utility
+
+7.  **Be explicit about constraints (eg no short-selling, fully invested)**
+    : Constraints can materially alter the feasible set and may produce corner solutions on the frontier.
+
+8.  **Discuss estimation error and the unreliability of historical inputs.**
+    : historical estimates may not predict future behaviour. Result can be sensitive to small changes in inputs.
+
+9.  **consider other important investment risks beyond variance.**
+    : Inflation, currency, reinvestment, marketability and credit risks may affect suitability.
+
 10. **Acknowledge limitations and the need for review**
-  : Basic MPT ignores liabilities / actuarial risk : portfolios should be monitored and updated as conditions change
- 
- 
+    : Basic MPT ignores liabilities / actuarial risk : portfolios should be monitored and updated as conditions change
+
 ```{=latex}
 \newpage
 ```
@@ -1019,157 +1040,87 @@ Answers: $\mathbb{E}[R_{2}] =$ `r fmt_trunc_ellip(r2_mu_bar)`, $\text{Var}(R_{2}
 ::: 
 :::
 
-Point to note: The first two moments about the mean of asset one and asset two
-(the mean and the variance) are the same.
+_Point of note: The first two moments about the mean of asset one and asset two
+(the mean and the variance) are the same._
+
+```{=latex}
+\newpage
+```
 
 ## Use **R** to estimate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. _[5 marks]_ {#qthreePtB}
 
-```{r Q3b, echo=TRUE, results = 'hide', fig.cap="Code"}
+```{r Q3b, echo=FALSE, results = 'hide', fig.cap="Code"}
+#  =================
+# Monte Carlo
+#  =================
+# # Z can be considered to be ~Binomial(n=n_sim, P=weights for each part)
+# R is then simulated as normal with mean that depends upon value of Z
+
 # Set seed for reproducibility
 set.seed(1234)
-# Set the number of simulations
-n_sim <- 1e6
+# set the number of simulations
+n_vals <- 10^(3:7)
+n_sim  <- max(n_vals)
 
-# Z can be considered to be ~Binomial(n=n_sim, P=weights for each part)
-# R is then simulated as normal with mean that depends upon value of Z
-Z <- rbinom(n_sim, size = 1, prob = 0.2)
-R2 <- rnorm(n_sim, mean = ifelse(Z==1, 0.3, 0.0), sd = 0.1)
+# Simulate the mixture indicator Z (0 or 1)
+Z_all  <- rbinom(n_sim, size = 1, prob = 0.2)
+# Simulate returns based on Z
+# if Z=1, Mean=0.3; elseif Z=0, Mean=0.0.
+# SD is always 0.1.
+R2_all <- rnorm(n_sim, mean = ifelse(Z_all == 1, 0.3, 0.0), sd = 0.1)
 
-# Calculate mean and variance
-R_2_mean <- mean(R2)
-R_2_var <- var(R2)
+mean_by_n <- sapply(n_vals, function(n) mean(R2_all[1:n]))
+var_by_n  <- sapply(n_vals, function(n) var (R2_all[1:n]))
+
+out <- data.frame(n_sim = n_vals, mean = mean_by_n, var = var_by_n)
+
+# get last one picked
+R_2_mean_sim <- mean_by_n[length(n_vals)]
+R_2_var_sim  <- var_by_n[length(n_vals)]
+
+#  =================
+# Exact calculation using integration function
+#  =================
+# define pdf for Asset 2 returns
+pdf_r2 <- function(x) {
+  0.8 * dnorm(x, mean = 0.0, sd = 0.1) +
+  0.2 * dnorm(x, mean = 0.3, sd = 0.1)
+}
+
+# integrate to find E[X]
+# use -Inf to Inf as the bounds for the Normal distribution
+E_integrate <- integrate(function(x) x * pdf_r2(x), lower = -Inf, upper = Inf)$value
+
+# Integrate to find E[X^2]
+E_sq_integrate <- integrate(function(x) x^2 * pdf_r2(x), lower = -Inf, upper = Inf)$value
+
+# calculate variance
+Var_integrate <- E_sq_integrate - (E_integrate)^2
 ```
 
-Monte Carlo simulation was used to estimate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$ using **R**. An indicator $Z \sim \text{Bernoulli}(0.2)$ was used to choose the mixture component, and values for $R_{2}\mid Z$ were generated from a normal distribution with standard deviation $0.1$ and mean $0$ (if $Z=0$) or $0.3$ (if $Z=1$).
+The mean and variance of the returns generated by Asset 2 were calculated using
+two computational methods: Monte Carlo simulation (stochastic) and numerical
+integration (deterministic). These results are shown, along with the theoretical
+values derived in \@ref(qthreePtA), are shown in Table
+\@ref(tab:q3b-table).
 
-The sample mean and variance of the simulated values provide estimates for $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$ ($\widehat{\mathbb{E}[R_{2}]}$ and $\widehat{\mathrm{Var}(R_{2})}$ respectively).
+```{r q3b-table, echo=FALSE}
+# Create comparison dataframe
+results_q3b <- data.frame(
+  Method = c(paste0("Monte Carlo ($10^",formatC(log(n_sim,10)),"$ runs)"), "Numerical Integration", "Theoretical (Part 3A)"),
+  Mean = c(R_2_mean_sim, E_integrate, r2_mu_bar),
+  Variance = c(R_2_var_sim, Var_integrate, r2_var)
+)
 
-Using `r formatC(n_sim, format="fg", digits=3, big.mark=",")` simulations, one obtains
-$\widehat{\mathbb{E}[R_{2}]}=$ `r fmt_trunc_ellip(R_2_mean)`
-and
-$\widehat{\mathrm{Var}(R_{2})}=$ `r fmt_trunc_ellip(R_2_var)`, or
-`r formatC(R_2_mean, format="fg", digits=5, small.mark=" ", small.interval=3L)`
-and
-`r formatC(R_2_var, format="fg", digits=5, small.mark=" ", small.interval=3L)` to 5 significant figures.
-
-These are very similar/in agreement, as expected, to the theoretical values of
-`r fmt_trunc_ellip(r2_mu_bar)` and `r fmt_trunc_ellip(r2_var)`
-calculated in \@ref(qthreePtA).
-
-<!-- `r fmt_trunc_ellip(mean(R2))` -->
-
-_Notes on the R functions: `rbinom(n, size=1, prob=p)` generates $n$ Bernoulli($p$) draws (0/1 indicators), and `rnorm(n, mean, sd)` generates $n$ normal draws; here mean is a vector so the mean changes with $Z$._
-
-- =BE note: Do we want a table of results here?, i.e., something like this:=
-
-| Quantity              | Simulation                    | Theoretical                    |
-| :-------------------- | :---------------------------- | :----------------------------- |
-| $\mathbb{E}[R_{2}]$   | `r fmt_trunc_ellip(R_2_mean)` | `r fmt_trunc_ellip(r2_mu_bar)` |
-| $\mathrm{Var}(R_{2})$ | `r fmt_trunc_ellip(R_2_var)`  | `r fmt_trunc_ellip(r2_var)`    |
-
-```{r Q3b-convergence-table-ci, echo=FALSE, message=FALSE, warning=FALSE}
-set.seed(1234)
-p <- 0.2
-mu0 <- 0.0
-mu1 <- 0.3
-sd <- 0.1
-
-# simulation sizes: 10^2 ... 10^7
-checkpoints <- 10^(2:7)
-
-# streaming mean/variance (Welford)
-# https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-chunk_size <- 1e6
-n <- 0
-mean_run <- 0
-M2 <- 0
-
-update_running <- function(x, n, mean_run, M2) {
-  m <- length(x)
-  xbar <- mean(x)
-  xM2 <- sum((x - xbar)^2)
-  n_new <- n + m
-  delta <- xbar - mean_run
-  mean_new <- mean_run + delta * m / n_new
-  M2_new <- M2 + xM2 + delta^2 * n * m / n_new
-  list(n = n_new, mean = mean_new, M2 = M2_new)
-}
-
-out <- vector("list", length(checkpoints))
-
-for (i in seq_along(checkpoints)) {
-  target <- checkpoints[i]
-  remaining <- target - n
-
-  while (remaining > 0) {
-    m <- min(chunk_size, remaining)
-    Z <- rbinom(m, size = 1, prob = p)
-    x <- rnorm(m, mean = ifelse(Z == 1, mu1, mu0), sd = sd)
-
-    upd <- update_running(x, n, mean_run, M2)
-    n <- upd$n
-    mean_run <- upd$mean
-    M2 <- upd$M2
-
-    remaining <- target - n
-  }
-
-  var_run <- M2 / (n - 1)
-  out[[i]] <- data.frame(n_sim = n, mean = mean_run, var = var_run)
-}
-
-z <- qnorm(0.975)
-ci_digits <- 5
-
-sim_df <- bind_rows(out) %>%
-  mutate(
-    n_label = paste0("$10^{", as.integer(log10(n_sim)), "}$"),
-
-    # 95% CI for mean (CLT)
-    se_mean = sqrt(var / n_sim),
-    mean_lo = mean - z * se_mean,
-    mean_hi = mean + z * se_mean,
-
-    # 95% CI for variance (chi-square; exact if normal, approx for mixture)
-    df = n_sim - 1,
-    var_lo = df * var / qchisq(0.975, df),
-    var_hi = df * var / qchisq(0.025, df),
-
-    mean_5sf = formatC(
-      mean,
-      format = "fg",
-      digits = 4,
-      flag = "#"
-      # small.interval = 3L,
-      # small.mark = " "
-    ),
-    var_5sf = formatC(
-      var,
-      format = "fg",
-      digits = 4,
-      flag = "#"
-      # small.interval = 3L,
-      # small.mark = " "
-    ),
-    mean_ci = format_interval(mean_lo, mean_hi, digits = ci_digits),
-    var_ci = format_interval(var_lo, var_hi, digits = ci_digits)
-  ) %>%
-  select(
-    `Simulations` = n_label,
-    `Mean` = mean_5sf,
-    `95 percent CI (mean)` = mean_ci,
-    `Variance` = var_5sf,
-    `95 percent CI (var)` = var_ci
-  )
-
-sim_df %>%
-  kable(
-    booktabs = TRUE,
-    escape = FALSE,
-    align = "lcccc",
-    linesep = c("", "", "\\addlinespace"),
-    caption = "Monte Carlo convergence for $\\mathbb{E}[R_2]$ and $\\mathrm{Var}(R_2)$ with 95 percent intervals."
-  ) %>%
+# Display Table
+knitr::kable(
+  results_q3b,
+  digits = 6,
+  caption = "Comparison of expected value and variance across methods.",
+  booktabs = TRUE,
+  escape = FALSE,
+  align = "lrr"
+) %>%
   kable_styling(
     full_width = FALSE,
     position = "center",
@@ -1177,11 +1128,118 @@ sim_df %>%
   )
 ```
 
+### Method 1: Monte Carlo Simulation {-}
+
+Monte Carlo simulation was used to estimate the mean and variance by generating
+a large number of random samples from the mixture distribution.An indicator
+$Z\sim \text{Bernoulli}(0.2)$ was used to choose the mixture component, and
+values for $R_{2}\mid Z$ were generated from a normal distribution with standard
+deviation $0.1$ and mean $0$ (if $Z=0$) or $0.3$ (if $Z=1$). The sample mean and
+variance of the simulated values provide estimates for $\mathbb{E}[R_{2}]$ and
+$\mathrm{Var}(R_{2})$ ($\widehat{\mathbb{E}[R_{2}]}$ and
+$\widehat{\mathrm{Var}(R_{2})}$ respectively).
+
+Using `r formatC(n_sim, format="fg", digits=3, big.mark=",")` simulations, one
+obtains $\widehat{\mathbb{E}[R_{2}]}=$ `r fmt_trunc_ellip(R_2_mean_sim)`
+and $\widehat{\mathrm{Var}(R_{2})}=$ `r fmt_trunc_ellip(R_2_var_sim)`, or
+`r formatC(R_2_mean_sim, format="fg", digits=5, small.mark="", small.interval=3L)`
+and
+`r formatC(R_2_var_sim, format="fg", digits=5, small.mark="", small.interval=3L)`
+to 5 significant figures. These results are in agreement with the theoretical
+values of `r fmt_trunc_ellip(r2_mu_bar)` and `r fmt_trunc_ellip(r2_var)`
+calculated in \@ref(qthreePtA). As shown in Table
+\@ref(tab:Q3b-convergence-table-ci), the Monte Carlo estimates converge to the
+theoretical values as the number of simulations increases.
+
+The 95% confidence intervals (CI) in Table \@ref(tab:Q3b-convergence-table-ci)
+were computed from the simulated sample moments at each simulation size. For the
+mean, a large-sample normal approximation was used:
+
+$$
+\widehat{\mathbb{E}[R_{2}]} \pm z_{0.975} \widehat{SE}(\widehat{\mathbb{E}[R_{2}]})
+,\qquad
+\widehat{SE}(\widehat{\mathbb{E}[R_{2}]}) = \sqrt{ \frac{\widehat{\text{Var}}(R_{2})}{n} }
+$$
+
+where $z_{0.975}=\Phi^{-1}(0.975)$ and $\widehat{\text{Var}}(R_2)$ is the sample variance computed from the n simulated values.
+
+For the variance, a chi-squared based CI is reported:
+
+$$
+\left[ \frac{(n-1)\widehat{\text{Var}}(R_{2})}{\chi^{2}_{0.975, \,n-1}}, \frac{(n-1)\widehat{\text{Var}{}}(R_{2})}{\chi^{2}_{0.025,\,n-1}} \right]
+$$
+
+where $\chi^{2}_{\alpha, \,\nu}$ denotes the $\alpha$ quantile of a chi-squared
+distribution with $\nu=n-1$ degrees of freedom. This chi-square interval is
+exact for normally distributed samples and is used here as a standard
+large-sample approximation for assessing Monte Carlo convergence.
+
+```{r Q3b-convergence-table-ci, echo=FALSE, message=FALSE, warning=FALSE}
+# =================
+# Convergence table (re-uses `out` from previous chunk)
+# =================
+z <- qnorm(0.975)
+ci_digits <- 5
+
+sim_df <- out %>%
+  mutate(
+    n_label = sprintf("$10^{%d}$", as.integer(log10(n_sim))),
+
+    # Mean CI (using normal approximation)
+    se_mean = sqrt(var / n_sim),
+    mean_lo = mean - z * se_mean,
+    mean_hi = mean + z * se_mean,
+
+    # Variance CI (chi-square)
+    df     = n_sim - 1,
+    var_lo = df * var / qchisq(0.975, df),
+    var_hi = df * var / qchisq(0.025, df),
+
+    # Formatting
+    mean_5sf = formatC(mean, format = "fg", digits = 5, flag = "#"),
+    var_5sf  = formatC(var,  format = "fg", digits = 5, flag = "#"),
+    mean_ci  = format_interval(mean_lo, mean_hi, digits = ci_digits),
+    var_ci   = format_interval(var_lo,  var_hi,  digits = ci_digits)
+  ) %>%
+  select(
+    `Simulations` = n_label,
+    `Mean` = mean_5sf,
+    `95\\% CI (mean)` = mean_ci,
+    `Variance` = var_5sf,
+    `95\\% CI (var)` = var_ci
+  )
+
+sim_df %>%
+  kable(
+    booktabs = TRUE,
+    escape = FALSE,
+    align = "lcccc",
+    linesep = c("", "", "", "", "\\addlinespace"),
+    caption = "Monte Carlo convergence for $\\mathbb{E}[R_2]$ and $\\mathrm{Var}(R_2)$ with 95 percent confidence intervals (CI). See text for more information about the calculations used for these intervals."
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    latex_options = "hold_position"
+  )
+
+```
+
+### Method 2: Numerical Integration {-}
+
+The mean and variance were also calculated by integrating the probability
+density function directly using the `integrate` function in **R**.
+$\mathbb{E}[R_{2}]$ was calculated using
+$\mathbb{E}[R_{2}] = \int_{-\infty}^{\infty} x f_{R_2}(x) \, dx$ followed by
+$\mathbb{E}[R_{2}^2] = \int_{-\infty}^{\infty} x^2 f_{R_2}(x) \, dx$.
+The variance was calculated using
+$\text{Var}(R_{2}) = \mathbb{E}[R_{2}^2] - (\mathbb{E}[R_{2}])^2$.
+
 <!-- # ================================================================== -->
 <!-- # Q3(C)  Calculate the shortfall probabilities for asset 1
 <!-- # ================================================================== -->
 
-## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of _[2 marks]_ {#qthreePtC}
+## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of: {#qthreePtC}
 
 $$
 \begin{array}{ll}
@@ -1337,11 +1395,6 @@ Answer: `r sprintf("%.3f", results_r2["T2"]*100)`% (3dp)
 :::
 :::
 
-### Comments
-
-The results from part \@ref(qthreePtC) and \@ref(qthreePtD) are summarised 
-in Table \@ref(tab:qthr-pt-CD-summary).
-
 ```{r qthr-pt-CD-summary, echo=FALSE}
 # 1. Prepare data
 shortfall_transposed <- data.frame(
@@ -1375,12 +1428,15 @@ shortfall_transposed %>%
   )
 ```
 
-Table \@ref(tab:qthr-pt-CD-extension) extends this analysis to a broader range
-of thresholds. This comparison reveals that while Asset 2 has a higher
-probability of moderate losses (returns between roughly −5.77% and 0%), the
-relationship inverts in the extreme tail.
+### Comments {-}
 
-Asset 1 carries a higher probability of severe drawdowns (e.g., returns <−15%),
+The results from part \@ref(qthreePtC) and \@ref(qthreePtD) are summarised in
+Table \@ref(tab:qthr-pt-CD-summary). Table \@ref(tab:qthr-pt-CD-extension)
+extends this analysis to a broader range of thresholds. This comparison reveals
+that while Asset 2 has a higher probability of moderate losses (returns between
+roughly −5.77% and 0%), the relationship inverts in the extreme tail.
+
+Asset 1 carries a higher probability of severe drawdowns (any loss < -5.77%),
 demonstrating that despite identical variances, Asset 1 presents a greater
 danger of catastrophic loss.
 
@@ -1442,9 +1498,9 @@ shortfall_long %>%
 ## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes. _[3 marks]_ {#qthreePtE}
 
 The probability density functions of returns for assets 1 and 2 are shown in
-Figure \@ref(fig:Q3-part-e-ggplot).  
+Figure \@ref(fig:Q3-part-e-ggplot).
 
-```{r Q3-part-e-ggplot, eval = TRUE, echo = FALSE, fig.width=7, fig.height=6.0, fig.cap = paste("Comparative analysis of return distributions. Top: Probability density functions (PDFs) for Asset 1 ($R_1$, solid green) and Asset 2 ($R_2$, dotted orange). Vertical dotted lines indicate the crossover points where the densities are equal (returns of approximately ", paste(formatC(crossovers[1]*100, format="fg", digits=1), sep="","%,"), paste(formatC(crossovers[2]*100, format="fg", digits=1), sep="","%"), " and ", paste(formatC(crossovers[3]*100, format="fg", digits=1), sep="","%)."), "Bottom: The density difference ($R_2−R_1$). Positive values indicate regions where Asset 2 has a higher probability of occurrence, while negative values indicate regions where Asset 1 is more probable."), fig.pos='!ht'}
+```{r Q3-part-e-ggplot, eval = TRUE, echo = FALSE, fig.width=7, fig.height=5.9, fig.cap = paste("Top: Probability density functions for the returns generated by Asset 1 ($R_1$, solid green) and Asset 2 ($R_2$, dotted orange). Vertical dotted lines indicate the crossover points where the densities are equal (returns of approximately ", paste(formatC(crossovers[1]*100, format="fg", digits=1), sep="","%,"), paste(formatC(crossovers[2]*100, format="fg", digits=1), sep="","%"), " and ", paste(formatC(crossovers[3]*100, format="fg", digits=1), sep="","%)."), "Bottom: The density difference ($R_2−R_1$). Positive values indicate regions where Asset 2 has a higher probability of occurrence, while negative values indicate regions where Asset 1 is more probable."), fig.pos='!ht'}
 
 x_vals <- seq(-0.6, 0.6, by = 0.001)
 
@@ -1630,9 +1686,12 @@ dominating Asset 1 in the tails.
 
 ## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes. _[2 marks]_ {#qthreePtF}
 
+The probability density functions of returns for assets 1 and 2 are shown in
+Figure \@ref(fig:Q3-part-f-ggplot).
+
 <!-- # !BE note: this code is a mess - clean before submission. -->
 
-```{r Q3-part-f-ggplot, eval=TRUE, echo=FALSE, fig.width=7, fig.height=6.0, fig.cap="Top: PDFs. Middle: CDFs with crossover points (equal shortfall probabilities). Bottom: CDF difference (R2 - R1); positive means higher shortfall probability for R2 at that x.", fig.pos='!ht', message=FALSE, warning=FALSE}
+```{r Q3-part-f-ggplot, eval=TRUE, echo=FALSE, fig.width=7, fig.height=6.0, fig.cap="Top: Cumulative distribution functions for the returns generated by assets 1 and 2 with crossover points marked by dotted vertical lines (equal shortfall probabilities). Bottom: The difference in cumulative distribution function ($R_2−R_1$), where a positive value shows a higher shortfall probability for $R_2$ at that $x$.", fig.pos='!ht', message=FALSE, warning=FALSE}
 x_vals <- seq(-0.6, 0.6, by = 0.001)
 
 # --- distributions
@@ -1683,7 +1742,7 @@ cross_df <- tibble(x_int = crossovers_3f) %>%
 # --- label placement for CDF panel (use fixed y’s in [0,1], alternating)
 cross_df <- cross_df %>%
   mutate(
-    y_cdf  = ifelse(row_number() %% 2 == 1, 0.85, 0.15),
+    y_cdf  = ifelse(row_number() %% 2 == 1, 0.83, 0.15),
     vjust_cdf = ifelse(row_number() %% 2 == 1, 0.2, 1.2)
   )
 
@@ -1712,17 +1771,31 @@ p2 <- ggplot(df_cdf_long, aes(x = x, y = y, color = Asset, linetype = Asset)) +
     color = "black",
     linewidth = 0.5
   ) +
-  geom_text(
+  # geom_text(
+  #   data = cross_df,
+  #   aes(x = x_int, y = y_cdf, label = label, vjust = vjust_cdf),
+  #   inherit.aes = FALSE,
+  #   angle = 90,
+  #   size = 3,
+  #   fontface = "bold"
+  # ) +
+  geom_label(
     data = cross_df,
     aes(x = x_int, y = y_cdf, label = label, vjust = vjust_cdf),
     inherit.aes = FALSE,
     angle = 90,
     size = 3,
-    fontface = "bold"
+    fontface = "bold",
+    fill = "white", # background
+    label.size = 0, # border thickness (0 = no border)
+    label.padding = unit(0.15, "lines") # space around text
   ) +
-  labs(title = "Cumulative distribution functions", x = NULL, y = "Probability") +
+  labs(
+    title = "Cumulative distribution functions",
+    x = NULL,
+    y = "Probability"
+  ) +
   base_theme
-
 # --- Panel 3: CDF difference (R2 - R1) + vlines + labels
 p3 <- ggplot(plot_df, aes(x = x, y = diff_cdf)) +
   # positive area (where cdf_r1 < cdf_r2)
@@ -1780,7 +1853,6 @@ rises above Asset 1, indicating that Asset 2 is more likely to generate small to
 moderate losses. While Asset 2 is more likely to result in a return near zero,
 Asset 1 carries the distinct tail risk of catastrophic drawdown.
 
-
 ```{=latex}
 \newpage
 ```
@@ -1789,10 +1861,7 @@ Asset 1 carries the distinct tail risk of catastrophic drawdown.
 <!-- # Q3(g)  comment on the risk involved in asset 2, compared to asset 1
 <!-- # ================================================================== -->
 
-## Comment on the risk involved in asset 2, compared to asset 1. _[4 marks]_ {#qthreePtG}
-
-Based on your answers to parts Q3a–Q3f above, comment on the risk involved in
-asset 2, compared to asset 1. _[4 marks]_
+## Based on your answers to parts \@ref(qthreePtA)–\@ref(qthreePtF) above, comment on the risk involved in asset 2, compared to asset 1. _[4 marks]_ {#qthreePtG}
 
 Assets 1 & 2 possess a different risk profile, despite their identical means and
 variances. Figure \@ref(fig:Q3-part-e-ggplot) reveals that Asset 1 is symmetric
@@ -1803,51 +1872,11 @@ probability of severe losses (Figure \@ref(fig:Q3-part-f-ggplot)). Asset 1 is a
 riskier holding for a risk-averse investor due to its greater exposure to deep
 downside events[^utility-skew].
 
----
-
-Drafts below:
-
-
-While both assets share identical Mean and Variance, their risk profiles differ in the tails. Asset 1 carries higher tail risk (higher
-probability of losses below the crossover (value)
-calculated in (ref), whereas Asset 2 entails a higher frequency of small losses.
-A risk-averse investor should prefer Asset 2
-due to its bounded downside and positive skewness, while a Mean-Variance
-investor would view them as equivalent (see (appendix ref) for utility proofs).
-
-
-BE note: quick test - refine later~
-
-
-- Answer might want us to link this to investor types (Asset 1 linked to not liking any type of risk vs R2 being more comfortable with some minor volatility risk, but wanting lower risk of getting completely wiped out)
-- Probably also want to mention CDFs crossing - so no one asset clearly less or more risky than the other
-- Do we want to mention cross-over point? Think it's ~ -0.05777418
-- So this means for any target return higher than about -5.8%, Asset 1 is safer and for any target return lower than -5.8%, Asset 2 is safer?
-- Or in other words: Asset 1 has a risk of crashing (left tail) and asset 2 has
-  a 'jackpot chance' (right tail).
-
-```{r Q3-cross-over-point, echo=TRUE}
-find_crossing <- function(L) {
-    pnorm(L, r1_mu, r1_sd) - (r2_p1*pnorm(L, r2_mu1, r2_sd1) + r2_p2*pnorm(L, r2_mu2, r2_sd2))
-}
-crossing_point <- uniroot(find_crossing, interval = c(-0.1, 0.05))
-crossing_point$root
-```
-
-Based on the results from $Q3(a)$ to $Q3(f)$, asset 2 appears to be riskier than
-asset1, even though their expected returns are similar. Asset 1 follows a single
-normal distribution, so its returns are more stable and predictable. In
-contrast, asset 2 is a mixture of two normal distributions, which adds more
-uncertainty. The shortfall probabilities also indicate that asset 2 has a higer
-of risk of extreme outliers. This can be seen in the PDF, where asset 2 shows a
-more irregular shape and heavier tails. The CDF also indicates that asset 2 has
-a higer of risk of extreme outcomes.
-
-- pdf : Show all final numerical answers in **bold**. Include all working. Paste
-  the plots. Write your answer to part Q3g on no more than 5 lines.
-- R: Computations and plotting should be done in R (code chunk with heading
-  “Q3”).
-- [Total: 25 marks (41.7%)]
+<!-- - pdf : Show all final numerical answers in **bold**. Include all working. Paste -->
+<!--   the plots. Write your answer to part Q3g on no more than 5 lines. -->
+<!-- - R: Computations and plotting should be done in R (code chunk with heading -->
+<!--   “Q3”). -->
+<!-- - [Total: 25 marks (41.7%)] -->
 
 ```{=latex}
 \newpage
@@ -1906,7 +1935,7 @@ We evaluate the decision using the three standard models covered in SMM068: Quad
 As a brief recap, a higher utility score is better as our goal is always to
 maximise expected utility.
 
-### Quadratic utility
+### Quadratic utility {-}
 
 Quadratic utility assumes the investor cares only about the expected return and the variance. It penalizes volatility regardless of whether that volatility comes from upside or downside moves. The function is defined as:
 
@@ -1926,7 +1955,7 @@ U(R) &= R - \frac{k}{2}R^{2} \\
 
 So for our assets, where $\mathbb{E}[R_1] = \mathbb{E}[R_2] = 0.06$ and $\text{Var}(R_1) = \text{Var}(R_2) = 0.0244$, the quadratic utility function will be identical for both assets.
 
-### Logarithmic and power utility (CRRA)
+### Logarithmic and power utility {-}
 
 Logarithmic utility ($\gamma = 1$) is the baseline for rational growth (often associated with the Kelly Criterion). It assumes wealth cannot drop to zero, and risk aversion adjusts naturally with wealth:
 
@@ -1942,9 +1971,11 @@ $$
 
 Where $\gamma>1$ represents one being risk averse and $\gamma<1$ represents one being risk seeking. We can observe how increasing $\gamma$ (representing higher risk aversion) affects the preference for Asset 2 due to its positive skewness.
 
-### Comparative analysis
+### Comparative analysis {-}
 
 The table below consolidates the decision-making process using exact integral calculations (eliminating simulation noise) across our key utility frameworks.
+
+BE note: need to add `lower = -0.65, upper = 2` description of process here...
 
 ```{r exact-utility-table, echo=FALSE, warning=FALSE, message=FALSE}
 # BE note: move up if we keep this section
@@ -1973,7 +2004,7 @@ calc_exact_utility <- function(asset_type, gamma) {
     integrand <- function(x) { utility_func(x) * pdf_r2(x) }
   }
   # Integrate with safe limits to avoid singularity at -1
-  return(integrate(integrand, lower = -0.99, upper = 5)$value)
+  return(integrate(integrand, lower = -0.65, upper = 2)$value)
 }
 
 # --- Calculate Scores ---
@@ -1990,8 +2021,8 @@ score_r2_quad <- (r2_p1 * r2_mu1 + r2_p2 * r2_mu2) - (k_quad / 2) * r2_sec_mom
 gammas <- c(1, 3, 5, 10)
 crra_scores <- map_dfr(gammas, function(g) {
   tibble(
-    Model = "Power (CRRA)",
-    Assumption = ifelse(g == 1, "Gamma = 1 (Logarithmic)", paste0("Gamma = ", g)),
+    Model = ifelse(g == 1, "Logarithmic", "Power"),
+    Assumption = paste0("$\\gamma = ", g, "$"),
     R1 = calc_exact_utility("R1", g),
     R2 = calc_exact_utility("R2", g)
   )
@@ -1999,15 +2030,15 @@ crra_scores <- map_dfr(gammas, function(g) {
 
 # Combine and Build Table
 results <- bind_rows(
-  tibble(Model = "Quadratic", Assumption = "k = 2", R1 = score_r1_quad, R2 = score_r2_quad),
+  tibble(Model = "Quadratic", Assumption = "$k = 2$", R1 = score_r1_quad, R2 = score_r2_quad),
   crra_scores
 ) %>%
   mutate(
     Diff = R2 - R1,
     Decision = case_when(
-      abs(Diff) < 1e-9 ~ "Indifferent",
-      Diff > 0 ~ "Choose Asset 2 (Skewed)",
-      TRUE ~ "Choose Asset 1 (Normal)"
+      abs(Diff) < 1e-9 ~ "Indifferent", # if difference less than tolerance
+      Diff > 0 ~ "Choose Asset 2",
+      TRUE ~ "Choose Asset 1"
     )
   )
 
@@ -2015,8 +2046,9 @@ results %>%
   select(Model, Assumption, R1, R2, Decision) %>%
   kable(
     digits = 5,
-    caption = "Comparison of exact expected utility scores (no simulation noise)",
-    booktabs = TRUE
+    caption = "Comparison of expected utility scores for returns generated by asset 1 ($R_1$) and asset 2 ($R_2$).",
+    booktabs = TRUE,
+    escape = FALSE,
   ) %>%
   kable_styling(
     full_width = FALSE,
@@ -2026,7 +2058,7 @@ results %>%
   column_spec(5, bold = TRUE)
 ```
 
-### Visualising the decision boundary (power utility function)
+### Visualising the decision boundary (power utility function) {-}
 
 By calculating the difference in expected utility $(\mathbb{E}\big[U(R_2)\big] - \mathbb{E}\big[U(R_1)\big])$ continuously across a spectrum of risk aversion, we can see exactly how the preference for positive skewness compounds as $\gamma$ increases.
 (!ref - link paper here by Iqbal or collaborators in which this approach was
@@ -2172,11 +2204,11 @@ While GenAI was treated as a collaborator, the final analysis, statistical
 interpretation, and the written content of this report were generated and
 verified by the (human) group members.
 
-[^utility-theory]: 
-    Described in more detail in the appendix (\S\@ref(apd-utility-theory)).
+[^utility-theory]: Described in more detail in the appendix (\S\@ref(apd-utility-theory)).
 
-[^utility-skew]: 
+[^utility-skew]:
     This is demonstrated in the appendix (\S\@ref(apd-utility-theory) and Table
-    \@ref(tab:exact-utility-table)), a CRRA utility function with $\gamma > 0$
-    penalises the negative skewness of Asset 1, mathematically confirming it as
-    the inferior choice for risk-averse investors.
+    \@ref(tab:exact-utility-table)) where we show that a constant relative risk
+    aversion (CRRA) utility function with $\gamma > 0$ penalises the negative
+    skewness of Asset 1, mathematically confirming it as the inferior choice for
+    risk-averse investors.
