@@ -903,47 +903,68 @@ text(
 
 ```
 
+```{=latex}
+\newpage
+```
+
 ## Points to raise with investor
 
-An individual investor would like to invest in the 5 stocks and intends to use
+*An individual investor would like to invest in the 5 stocks and intends to use
 the efficient frontier that you computed above. List, in approximate descending
 order of importance, ten points that you will raise with the investor to help
-her construct her investment portfolio.
+her construct her investment portfolio.*
 
-Prior assumptions:
-- 
+Points we would raise with the investor about the portfolio constructed using 
+mean-variance portfolio theory (MPT) are as follows: 
 
-
- 1. **Establish the investor's objectives and the single-period horizon**
-   : Mean-variance portfolio theory is a single-step framework, so the time period and goal must be specified
-   
- 2. **Clarify the investor's attitude to risk (risk-averse and non-satiated)**
-   : At a given level of risk they prefer higher return, and at a given return they prefer lower variance.
- 
- 3. **Determine the investor's optimal portfolio using indifference curves.**
-   : No other portfolio offers higer return for the same variance or lower variance for the same return
- 
- 4. **Restrict attention to the efficient frontier only.**
-   : An efficient portfolio is one for which no other portfolio offers higher return for the same variance( or lower variance for the same return)
-   
- 5.	**Recognise that all expected returns, variances and covariances are assumed known.**
-   : Application requires estimates of expected returns and the variance-covariance structure, which may be unstable.
- 
- 6. **link the choice to utility / indifference curves.**
-   : The optimal portfolio is obtained by selecting the efficient portfolio that maximises expected utility
-   
- 7. **Be explicit about constraints (eg no short-selling, fully invested)**
-   : Constraints can materially alter the feasible set and may produce corner solutions on the frontier.
-   
- 8. **Discuss estimation error and the unreliability of historical inputs.**
-   : historical estimates may not predict future behaviour. Result can be sensitive to small changes in inputs.
-   
- 9. **consider other important investment risks beyond variance.**
-  : Inflation, currency, reinvestment, marketability and credit risks may affect suitability.
+### Investor specific points {-}
   
-10. **Acknowledge limitations and the need for review**
-  : Basic MPT ignores liabilities / actuarial risk : portfolios should be monitored and updated as conditions change
- 
+1. Establish her objectives, single-period time horizon, and liquidity needs as
+MPT is a single-step framework and liquidating large positions can be
+costly or force her to sell during a downturn.
+
+2. Assess her true attitude to risk (risk capacity & tolerance) and confirm
+baseline risk profile (i.e., does she exhibit risk aversion and non-satiation &
+her financial capacity to absorb losses).
+
+3. Evaluate her human capital and outside investments. Check her holistic
+wealth, if her income is tied to same sector as stocks, and establish no
+conflicts of interest or insider trading.^[We are implicitly assuming that this
+investor does not have any environmental, social, or governance (ESG)
+preferences given that she has already accepted the portfolio we have
+constructed, otherwise we would also ask about this here.]
+
+### Portfolio selection / strategy {-}
+
+4. Outline option to add risk-free asset in addition to portfolio.  Describe
+blending portfolio with a risk-free asset (T-bills) to achieve a superior
+risk-adjusted profile on the capital allocation line.
+
+5. Select optimal portfolio using indifference curves.  Explain that any
+portfolio below curve is sub-optimal and use utility theory to find her optimal
+portfolio - maximising expected utility.
+
+6. Explicitly outline impact of constraints used in portfolio construction. No
+short-selling can produce situations where one is overexposed to one or two
+stocks.
+
+### Model limitations {-}
+
+7. Highlight estimation error risk. MPT assumes future returns match 2023-2025
+history and all metrics are known, but these are difficult to forecast with
+small errors distorting optimal weights.
+
+8. Warn about variance as an incomplete measure of risk (treats unexpected gains
+identically to crashes). Review downside specific metrics (i.e., VaR^[Value at
+Risk]) for probability of severe losses.
+
+9. Limitation with only 5 U.S. stocks means exposed to region-specific risk.
+Warn her about correlation breakdown during severe market downturns (all stock
+correlations converge to 1).
+
+10. The model used requires periodic review and ignores transaction costs and
+taxes. Emphasise need to monitor inflation, currency, and reinvestment risk to
+protect her purchasing power.
  
 ```{=latex}
 \newpage
