@@ -654,6 +654,40 @@ N_return <- length(mean_returns_a)
 
 ## Q2(a)
 
+### Ardi Q2a
+
+I tidied up the computation of mean returns and covariance matrix a little bit.
+
+```{r}
+
+df_day_returns <- prices |>
+  arrange(Date) |> 
+  mutate(across(all_of(stocks), ~  .x / lag(.x) - 1 ))
+
+```
+
+```{r}
+
+# Multiply by 252 trading days in a year to convert daily return to annual
+ANNUALISED.FACTOR <- 252
+
+( mean_returns_a <- df_day_returns |>
+    summarize(across(where(is.numeric), ~ mean(.x, na.rm=TRUE) * ANNUALISED.FACTOR )) |>
+    unlist() )
+
+```
+
+```{r}
+
+# Annualised covariance matrix 
+
+( cov_matrix_a <- cov(as.matrix(df_day_returns[-1,-1])) * ANNUALISED.FACTOR )
+
+```
+
+
+
+
 Daily returns were calculated from the adjusted closing prices of the five stocks. The expected returns were obtained by taking the average of the daily returns and the annualised.
 
 <!-- prettier-ignore -->
@@ -703,6 +737,10 @@ cov_matrix_a
 ```
 
 ## Q2b
+
+Ardi's note:
+We should put the formulation of optimisation problem in the matrix form here in latex.
+
 
 ```{r Q2b-working, echo=FALSE}
 # ==============================================================================
