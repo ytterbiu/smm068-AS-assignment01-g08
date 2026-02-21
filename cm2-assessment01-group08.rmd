@@ -667,37 +667,26 @@ statistics for the 5 stocks whose price data you downloaded in Q1.
 - Kurtosis / excess kurtosis?:
 - Covariance table
 
-### Ardi Q2a
 
-I tidied up the computation of mean returns and covariance matrix a little bit.
 
-```{r}
+```{r Q2a-working-Ardi}
 
 df_day_returns <- prices |>
   arrange(Date) |> 
   mutate(across(all_of(stocks), ~  .x / lag(.x) - 1 ))
 
-```
-
-```{r}
-
 # Multiply by 252 trading days in a year to convert daily return to annual
 ANNUALISED.FACTOR <- 252
 
-( mean_returns_a <- df_day_returns |>
+mean_returns_a <- df_day_returns |>
     summarize(across(where(is.numeric), ~ mean(.x, na.rm=TRUE) * ANNUALISED.FACTOR )) |>
-    unlist() )
-
-```
-
-```{r}
+    unlist()
 
 # Annualised covariance matrix 
 
-( cov_matrix_a <- cov(as.matrix(df_day_returns[-1,-1])) * ANNUALISED.FACTOR )
+cov_matrix_a <- cov(as.matrix(df_day_returns[-1,-1])) * ANNUALISED.FACTOR
 
 ```
-
 
 
 
@@ -751,11 +740,139 @@ cov_matrix_a
 
 ## Q2b
 
-Ardi's note:
-We should put the formulation of optimisation problem in the matrix form here in latex.
+We attempt to find portfolio weights $\mathbf{w}$ that minimise the portfolio variance while yielding the target mean return, i.e. a solution to the following optimisation problem:
+
+$$
+\begin{align*}
+\min &\quad \mathbf{w}^T \mathbf{D} \mathbf{w} \\
+\text{s.t.} &\quad \mathbf{1}^T \mathbf{w} = 1 \\
+  &\quad \mathbf{\bar{R}}^T \mathbf{w} = E \\
+  &\quad \mathbf{w} \geq \mathbf{0}
+\end{align*}
+$$
+
+We are using `solve.QP` function to solve a quadratic programming problem of the form:
+
+$$
+\begin{align*}
+\min &\quad \frac{1}{2}\mathbf{w}^T \mathbf{D} \mathbf{w} - \mathbf{d}^T \mathbf{w} \\
+\text{s.t.} &\quad \mathbf{A}^T \mathbf{b} \geq \mathbf{b_0} 
+\end{align*}
+$$
 
 
-```{r Q2b-working, echo=FALSE}
+We therefore set:
+
+$$
+\begin{align*}
+  \mathbf{d} =& \mathbf{0} \\
+  \mathbf{A} =&
+    \begin{bmatrix}
+      \mathbf{1}^T \\
+      \mathbf{\bar{R}}^T \\
+      \mathbf{I}_5 \\
+    \end{bmatrix} \\
+  \mathbf{b_0} =&
+    \begin{bmatrix}
+      1 \\
+      E \\
+      \mathbf{0}_5 \\
+    \end{bmatrix}
+\end{align*}
+$$
+
+```{r Q2b-working-Ardi}
+
+n_sec <- length(stocks)
+
+# matrix D is the stocks' covariance matrix
+Dmat <- cov_matrix_a
+
+# dvec is a (5x1) vector of 0's
+dvec <- rep(0, n_sec)
+
+# Sum of weights = 1 constraint
+ct_1_lhs <- rep(1, n_sec)
+ct_1_rhs <- 1
+
+# Target portfolio constraint
+ct_2_lhs <- mean_returns_a
+
+# vector of target returns
+targets <- seq(min(mean_returns_a), max(mean_returns_a), length.out = 200)
+
+res <- lapply(targets, function(tar) {
+  
+  Amat <- cbind(ct_1_lhs, ct_2_lhs, diag(n_sec))
+  b0vec <- c(ct_1_rhs, tar, rep(0, n_sec))
+
+  sol <- tryCatch(
+    solve.QP(Dmat, dvec, Amat, b0vec, meq = 2),
+    error = function(e) NULL
+  )
+  if (is.null(sol)) {
+    return(NULL)
+  }
+
+  w <- sol$solution
+  w[w < 1e-10] <- 0
+  w <- w / sum(w)
+
+  c(
+    risk = sqrt(t(w) %*% cov_matrix_a %*% w),
+    ret = sum(w * mean_returns_a)
+  )
+  
+})
+
+res <- do.call(rbind, res)
+
+
+plot(
+  res[, "risk"],
+  res[, "ret"],
+  type = "l",
+  col = "red",
+  lwd = 1,
+  xlab = "Mean-Var target Risk",
+  ylab = "Expected Return",
+  xlim = range(res[, "risk"]) * c(0.98, 1.02),
+  ylim = range(mean_returns_a) * c(0.9, 1.1),
+  main = "Efficient Frontier (No short selling)"
+)
+grid()
+i_gmv <- which.min(res[, "risk"])
+
+lines(
+  res[i_gmv:nrow(res), "risk"],
+  res[i_gmv:nrow(res), "ret"],
+  col = "darkgreen",
+  lwd = 2
+)
+
+asset_cols <- c("red", "blue", "orange", "purple", "brown")
+points(
+  sqrt(diag(cov_matrix_a)),
+  mean_returns_a,
+  pch = 16,
+  cex = 1.3,
+  col = asset_cols
+)
+
+text(
+  sqrt(diag(cov_matrix_a)),
+  mean_returns_a,
+  labels = names(mean_returns_a),
+  pos = 4,
+  cex = 0.9,
+  col = asset_cols
+)
+
+
+```
+
+
+```{r Q2b-working-Bongsu, eval=FALSE, include=FALSE}
 # ==============================================================================
 # Q2(b) estimate all required statistics for the 5 stocks
 # ==============================================================================
