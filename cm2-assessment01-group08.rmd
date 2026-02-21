@@ -740,7 +740,9 @@ cov_matrix_a
 
 ## Q2b
 
-We attempt to find portfolio weights $\mathbf{w}$ that minimise the portfolio variance while yielding the target mean return, i.e. a solution to the following optimisation problem:
+We attempt to find portfolio weights $\mathbf{w}$ that minimise the portfolio variance while yielding the target mean return $E$,
+
+i.e. a solution to the following optimisation problem:
 
 $$
 \begin{align*}
@@ -756,7 +758,7 @@ We are using `solve.QP` function to solve a quadratic programming problem of the
 $$
 \begin{align*}
 \min &\quad \frac{1}{2}\mathbf{w}^T \mathbf{D} \mathbf{w} - \mathbf{d}^T \mathbf{w} \\
-\text{s.t.} &\quad \mathbf{A}^T \mathbf{b} \geq \mathbf{b_0} 
+\text{s.t.} &\quad \mathbf{A}^T \mathbf{w} \geq \mathbf{b_0} 
 \end{align*}
 $$
 
@@ -780,6 +782,8 @@ $$
     \end{bmatrix}
 \end{align*}
 $$
+
+as arguments to the `solve.QP` function.
 
 ```{r Q2b-working-Ardi}
 
