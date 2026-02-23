@@ -1612,7 +1612,7 @@ shortfall_long %>%
     escape = FALSE,
     linesep = c("", "", "", "\\addlinespace"),
     align = "lcc",
-    col.names = c("Threshold Value", "$R_1$ (\\%)", "$R_2$ (\\%)"),
+    col.names = c("Shortfall threshold", "$R_1$ (\\%)", "$R_2$ (\\%)"),
     caption = "Shortfall probabilities. Asset 2 has a higher probability of any loss, but beyond the crossover (approximately -5.77\\%) Asset 1 has the larger tail probability."
   ) %>%
   kable_styling(
