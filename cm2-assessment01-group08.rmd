@@ -328,18 +328,18 @@ _Download 3 years of daily prices for 5 U.S. stocks. [5 marks]_
 
 - **URL:** https://finance.yahoo.com
 
-- **Name and ticker code for stocks**
-  - MSFT (Microsoft)
-  - JNJ (Johnson & Johnson)
-  - NEE (NextEra Energy, Inc)
+- **Name and ticker code for stocks** (in alphabetical order):
   - AIG (American International Group, Inc)
   - GS (The Goldman Sachs Group, Inc.)
+  - JNJ (Johnson & Johnson)
+  - MSFT (Microsoft)
+  - NEE (NextEra Energy, Inc)
 
 - **Date range:** 1 January 2023 – 31 December 2025
 
-- **Price label used:** Adjusted closing price
+- **Price label used:** Adjusted closing price (to account for corporate actions such as splits/dividends)
 
-- **Rationale:** The five stocks were chosen to provide diversification across industries (technology, healthcare, utilities/renewables, insurance/financial services, and investment banking) whilst ensuring all stocks were from large,U.S. listed, liquid companies with continuous daily price histories. 
+- **Rationale:** The five stocks were chosen to provide diversification across industries (technology, healthcare, utilities/renewables, insurance/financial services, and investment banking) whilst ensuring all stocks were from large, U.S. listed, liquid companies with continuous daily price histories. 
 
 ```{r Q1-table-for-html, include=knitr::is_html_output(), echo=FALSE, message=FALSE, warning=FALSE}
 if (knitr::is_html_output()) {
@@ -352,7 +352,7 @@ if (knitr::is_html_output()) {
       autoWidth = TRUE,
       columnDefs = list(list(className = 'dt-center', targets = "_all"))
     ),
-    caption = "Chosen insurance stock prices (Adjusted Close)",
+    caption = "Chosen insurance stock prices (adjusted close)",
     rownames = FALSE
   ) %>%
     # These are US stocks -> add USD currency format
@@ -740,47 +740,45 @@ cov_matrix_a
 
 ## Q2b
 
-We attempt to find portfolio weights $\mathbf{w}$ that minimise the portfolio variance while yielding the target mean return $E$,
+We attempt to find portfolio weights $w$ that minimise the portfolio variance while yielding the target mean return $E$,
 
 i.e. a solution to the following optimisation problem:
 
-$$
+<!-- prettier-ignore -->
 \begin{align*}
-\min &\quad \mathbf{w}^T \mathbf{D} \mathbf{w} \\
-\text{s.t.} &\quad \mathbf{1}^T \mathbf{w} = 1 \\
-  &\quad \mathbf{\bar{R}}^T \mathbf{w} = E \\
-  &\quad \mathbf{w} \geq \mathbf{0}
+\min &\quad {w}^T {D} {w} \\
+\text{s.t.} &\quad {1}^T {w} = 1 \\
+  &\quad \overline{{R}}^T {w} = E \\
+  &\quad {w} \geq {0}
 \end{align*}
-$$
 
 We are using `solve.QP` function to solve a quadratic programming problem of the form:
 
-$$
+<!-- prettier-ignore -->
 \begin{align*}
-\min &\quad \frac{1}{2}\mathbf{w}^T \mathbf{D} \mathbf{w} - \mathbf{d}^T \mathbf{w} \\
-\text{s.t.} &\quad \mathbf{A}^T \mathbf{w} \geq \mathbf{b_0} 
+\min &\quad \frac{1}{2}{w}^T {D} {w} - {d}^T {w} \\
+\text{s.t.} &\quad {A}^T {w} \geq {b_0}
 \end{align*}
-$$
 
 
 We therefore set:
 
 $$
-\begin{align*}
-  \mathbf{d} =& \mathbf{0} \\
-  \mathbf{A} =&
-    \begin{bmatrix}
-      \mathbf{1}^T \\
-      \mathbf{\bar{R}}^T \\
-      \mathbf{I}_5 \\
-    \end{bmatrix} \\
-  \mathbf{b_0} =&
-    \begin{bmatrix}
-      1 \\
-      E \\
-      \mathbf{0}_5 \\
-    \end{bmatrix}
-\end{align*}
+{d} = {0}, 
+\quad
+{A} = 
+\begin{bmatrix} 
+  {1}^T \\
+  \overline{{R}}^T \\
+  {I}_5 \\
+\end{bmatrix}, 
+\quad
+{b_0} =
+\begin{bmatrix}
+  1 \\
+  E \\
+  {0}_5 \\
+\end{bmatrix}
 $$
 
 as arguments to the `solve.QP` function.
@@ -1030,10 +1028,10 @@ text(
 
 ## Points to raise with investor
 
-*An individual investor would like to invest in the 5 stocks and intends to use
-the efficient frontier that you computed above. List, in approximate descending
-order of importance, ten points that you will raise with the investor to help
-her construct her investment portfolio.*
+*Context: An individual investor would like to invest in the 5 stocks and 
+intends to use the efficient frontier that you computed above. List, in 
+approximate descending order of importance, ten points that you will raise with 
+the investor to help her construct her investment portfolio.*
 
 Points we would raise with the investor about the portfolio constructed using 
 mean-variance portfolio theory (MPT) are as follows: 
@@ -1570,13 +1568,12 @@ shortfall_transposed %>%
 
 The results from part \@ref(qthreePtC) and \@ref(qthreePtD) are summarised in
 Table \@ref(tab:qthr-pt-CD-summary). Table \@ref(tab:qthr-pt-CD-extension)
-extends this analysis to a broader range of thresholds. This comparison reveals
-that while Asset 2 has a higher probability of moderate losses (returns between
-roughly −5.77% and 0%), the relationship inverts in the extreme tail.
+extends this analysis to a broader range of thresholds. 
 
-Asset 1 carries a higher probability of severe drawdowns (any loss < -5.77%),
-demonstrating that despite identical variances, Asset 1 presents a greater
-danger of catastrophic loss.
+While Asset 2 has a higher probability of moderate losses (returns between
+roughly −5.77% and 0%) Asset 1 carries a higher probability of severe drawdowns
+(any loss < -5.77%), and despite returns from both assets having the same
+variance, Asset 1 presents a greater danger of catastrophic loss.
 
 ```{r qthr-pt-CD-extension, echo=FALSE}
 thresholds <- c(
@@ -2047,42 +2044,93 @@ TBI -->
 
 # (APPENDIX) Appendices {-}
 
-# TBI
-
 # Supplemental methodology {#apd-supplementary-methods}
 
-## Selection of stocks
+<!-- ## Selection of stocks -->
 
-Five american insurance stocks were selected...
+<!-- Five american insurance stocks were selected... -->
 
-- They were selected on the basis of...
-- Probably ~2 paragraphs here (& could potentially include graph here rather
-  than under question 1? Honestly don't know - let's discuss).
+<!-- - They were selected on the basis of... -->
+<!-- - Probably ~2 paragraphs here (& could potentially include graph here rather -->
+<!--   than under question 1? Honestly don't know - let's discuss). -->
 
-## Additional figures (TBC)
+<!-- ## Additional figures (TBC) -->
+## Spreadsheet implementation (Excel) {#app:excel-impl}
+
+This subsection within the appendix documents how our Excel workbook is
+organised and how key quantities are computed. Here we outline the content of 
+each worksheet and describe the methodologies employed.
+
+### About sheet: workbook guide and navigation {#app:about}
+
+```{r excel-about, echo=FALSE, fig.cap="The information users are greeted with when opening the spreadsheet. The sheet is split into three parts: (1) Key information, (2) a workbook map with hyperlinks, and (3) version control.", out.width="80%"}
+knitr::include_graphics("fig/appendix-excel-about.png")
+```
+
+As shown in Figure \@ref(fig:excel-about), this sheet contains:
+
+1. A key information block that documents the module name, assessment title,
+   lecturer, submission files, and group members, providing immediate context
+   when the file is opened.
+1. A workbook map (or navigation table) that contains a clickable link to each
+   worksheet:
+   - Q1: raw imported price data
+   - Q1-Fig: figures showing returns for chosen stocks
+   - Q2a: returns + annualised statistics
+   - Q2b: efficient frontier + global minimum variance 
+   (estimated using 3 separate methods)
+
+1. Version control information, including a lightweight audit trail with version
+   number and last updated timestamp.
+
+### Q1 sheet: raw adjusted close prices {#app:q1}
+
+```{r excel-q1, echo=FALSE, fig.cap="Components of sheet Q1.", out.width="80%"}
+knitr::include_graphics("fig/appendix-excel-q1.png")
+```
+
+The stock data are downloaded to CSV using an R script and imported into Excel.
+This sheet (Figure \@ref(fig:excel-q1)) contains:
+
+1. A hyperlink that returns the user to the starting sheet. This is present
+   across all future sheets.
+2. An imported data table containing the daily adjusted close prices for the
+   five stocks, with the first column as the trading date.
+3. Additional information about the stocks, including the data source, URL,
+   ticker list, date range, and price label.
+
+### Q1-fig sheet:
+
+### Q2a sheet:
+
+### Q2b sheet:
+
 
 ## Examining \@ref(qthreePtG) through the lens of utility {#apd-utility-theory}
 
-Idea: While the probability density functions and cumulative distribution
+Here we evaluate an investors decision between the two assets using the three
+standard utility theory models covered in SMM068: Quadratic, Logarithmic, and
+Power.
+
+While the probability density functions and cumulative distribution
 functions visualised above describe the statistical properties of the
 returns, they do not prescribe a decision. To choose between Asset 1
 and Asset 2, we must map these returns to an investor's satisfaction
-using utility functions.
-
-We evaluate the decision using the three standard models covered in SMM068: Quadratic, Logarithmic, and Power.
-
-As a brief recap, a higher utility score is better as our goal is always to
-maximise expected utility.
+using utility functions. As a rational investors goal is always to maximise
+expected utility, an asset that results in a *higher* utility score will be more
+desirable.
 
 ### Quadratic utility {-}
 
-Quadratic utility assumes the investor cares only about the expected return and the variance. It penalizes volatility regardless of whether that volatility comes from upside or downside moves. The function is defined as:
+Quadratic utility assumes the investor cares only about the expected return and
+the variance. It penalises volatility regardless of whether that volatility
+comes from upside or downside moves. The function is defined as:
 
 $$
 U(R) = R - \frac{k}{2}R^{2}
 $$
 
-Where $k$ represents risk aversion.
+where $k$ represents risk aversion.
 
 <!-- prettier-ignore -->
 \begin{align*} 
@@ -2092,29 +2140,42 @@ U(R) &= R - \frac{k}{2}R^{2} \\
 &= \mathbb{E}\left[ R \right] - \frac{k}{2}\left(\text{Var}(R) - (\mathbb{E}[R])^2 \right)
 \end{align*}
 
-So for our assets, where $\mathbb{E}[R_1] = \mathbb{E}[R_2] = 0.06$ and $\text{Var}(R_1) = \text{Var}(R_2) = 0.0244$, the quadratic utility function will be identical for both assets.
+In \@ref(qthree) where $\mathbb{E}[R_1] = \mathbb{E}[R_2] = 0.06$ and 
+$\text{Var}(R_1) = \text{Var}(R_2) = 0.0244$, the quadratic utility
+function will be identical for asset 1 and asset 2.
 
 ### Logarithmic and power utility {-}
 
-Logarithmic utility ($\gamma = 1$) is the baseline for rational growth (often associated with the Kelly Criterion). It assumes wealth cannot drop to zero, and risk aversion adjusts naturally with wealth:
+Logarithmic utility ($\gamma = 1$) is the baseline for rational growth (often
+associated with the Kelly Criterion). It assumes wealth cannot drop to zero, and
+risk aversion adjusts naturally with wealth:
 
 $$
 U(R)=\ln(1+R)
 $$
 
-A power utility function allows one to fine-tune the investor's risk personality using the coefficient $\gamma$ (gamma):
+A power utility function allows one to fine-tune the investor's risk appetite
+using the coefficient $\gamma$ (gamma):
 
 $$
 U(R) = \frac{(1+R)^{1-\gamma}}{1-\gamma}
 $$
 
-Where $\gamma>1$ represents one being risk averse and $\gamma<1$ represents one being risk seeking. We can observe how increasing $\gamma$ (representing higher risk aversion) affects the preference for Asset 2 due to its positive skewness.
+where $\gamma>1$ represents one being risk averse and $\gamma<1$ represents one
+being more risk seeking. Cases where $\gamma \leq 0$ are not considered here.
+
+We can investigate how changing $\gamma$ (representing increasing and 
+decreasing risk aversion) affects an investor's asset preference.
 
 ### Comparative analysis {-}
 
-The table below consolidates the decision-making process using exact integral calculations (eliminating simulation noise) across our key utility frameworks.
-
-BE note: need to add `lower = -0.65, upper = 2` description of process here...
+Table \@ref(tab:exact-utility-table) evaluates the expected decision made by an
+investor using exact integral calculations across our three utility frameworks.
+With the exception of investors with a quadratic utility function (where both
+assets result in the same expected utility), asset 2 provides a higher expected
+utility than asset 1 and therefore would be selected by all investors considered
+here. The expected utility benefits of asset 2, relative to asset 1, increase as
+one becomes more risk averse.
 
 ```{r exact-utility-table, echo=FALSE, warning=FALSE, message=FALSE}
 # BE note: move up if we keep this section
@@ -2199,9 +2260,10 @@ results %>%
 
 ### Visualising the decision boundary (power utility function) {-}
 
-By calculating the difference in expected utility $(\mathbb{E}\big[U(R_2)\big] - \mathbb{E}\big[U(R_1)\big])$ continuously across a spectrum of risk aversion, we can see exactly how the preference for positive skewness compounds as $\gamma$ increases.
-(!ref - link paper here by Iqbal or collaborators in which this approach was
-used).
+By calculating the difference in expected utility $(\mathbb{E}\big[U(R_2)\big] -
+\mathbb{E}\big[U(R_1)\big])$ continuously across a spectrum of risk aversion, we
+can see exactly how the preference for positive skewness compounds as $\gamma$
+increases.
 
 ```{r skewness-preference-plot, echo=FALSE, warning=FALSE, message=FALSE}
 # 1. PDF for Asset 2 (Mixture)
@@ -2252,18 +2314,18 @@ ggplot(plot_data, aes(x = Gamma, y = Diff)) +
   geom_ribbon(aes(ymin = pmin(Diff, 0), ymax = 0), fill = "red", alpha = 0.1) +
   annotate(
     "text", x = 5, y = max(plot_data$Diff) * 0.75,
-    label = "Prefer Asset 2 (Positive Skew)", color = "blue", fontface = "italic"
+    label = "Prefer Asset 2 (positive skew)", color = "blue", fontface = "italic"
   ) +
   labs(
-    title = "The skewness preference",
-    subtitle = "Since mean and variance are equal, the curve shows the value of skewness",
-    x = "Risk aversion coefficient (gamma)",
-    y = "Utility advantage (EU_R2 - EU_R1)"
+    title = "Expected utility advantage",
+    subtitle = "Comparing expected utility across varying levels of risk aversion",
+    x = expression(paste("Risk aversion coefficient (", gamma, ")")),
+    y = expression(paste("Utility advantage (", E[U(R[2])] - E[U(R[1])], ")"))
   ) +
   theme_bw()
 ```
 
-# Reproducibility, accessibility & declarations (Gen-AI & word count?)
+# Reproducibility, accessibility & AI declaration
 
 <!-- BE note: taken out as we are submitting R file separately -->
 <!-- Use: `knitr::purl("cs1-group07.rmd", documentation = 0)` to generate r file -->
