@@ -612,7 +612,7 @@ px <- prices[, -1]
 
 #%returns
 data1 <- lapply(px, function(x) {
-  ROC(as.numeric(x), type = "discrete") * 100
+  ROC(as.numeric(x), type = "discrete") 
 })
 
 ret1 <- as.data.frame(do.call(cbind, data1))
@@ -648,9 +648,9 @@ sd_d           <- sqrt(diag(cov_matrix_d))
 # /3 to get 1 year's worth of data
 # then *100 to get 1 year as a %
 # - Wait for Ardi's attempt before editing...
-mean_returns_a <- mean_returns_d * nrow(R_pct) / 3/100
-cov_matrix_a <- cov_matrix_d* nrow(R_pct) / 3/100
-sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) / 3/100)
+mean_returns_a <- mean_returns_d * nrow(R_pct) * 252
+cov_matrix_a <- cov_matrix_d* nrow(R_pct) * 252
+sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) * 252)
 N_return <- length(mean_returns_a)
 
 ```
@@ -660,12 +660,12 @@ N_return <- length(mean_returns_a)
 In preparation for mean-variance portfolio optimization, estimate all required
 statistics for the 5 stocks whose price data you downloaded in Q1.
 
-- Required statistics include?
-- Mean:
-- Variance:
-- Skewness:
-- Kurtosis / excess kurtosis?:
-- Covariance table
+<!-- - Required statistics include? -->
+<!-- - Mean: -->
+<!-- - Variance: -->
+<!-- - Skewness: -->
+<!-- - Kurtosis / excess kurtosis?: -->
+<!-- - Covariance table -->
 
 
 
@@ -692,16 +692,78 @@ cov_matrix_a <- cov(as.matrix(df_day_returns[-1,-1])) * ANNUALISED.FACTOR
 
 Daily returns were calculated from the adjusted closing prices of the five stocks. The expected returns were obtained by taking the average of the daily returns and the annualised.
 
+The variance–covariance matrix were also estimated using the same daily returns and annualised accordingly.
+The results show that the stocks have different levels of return and risk
+
 <!-- prettier-ignore -->
 ::: {.answer-wrapper}
 ::: {.answer}
-Answer:
 
-`r sprintf("%s %.3f",colnames(ret1)[2], mean_returns_a[1]*100)`% (3dp)
-`r sprintf("%s %.3f",colnames(ret1)[3], mean_returns_a[2]*100)`% (3dp)
-`r sprintf("%s %.3f",colnames(ret1)[4], mean_returns_a[3]*100)`% (3dp)
-`r sprintf("%s %.3f",colnames(ret1)[5], mean_returns_a[4]*100)`% (3dp)
-`r sprintf("%s %.3f",colnames(ret1)[6], mean_returns_a[5]*100)`% (3dp)
+Answer: 
+
+Mean(%)
+```{r, echo=FALSE}
+library(knitr)
+
+mean_table <- round(
+  rbind(
+    Daily_Return  = mean_returns_d * 100,
+    Annual_Return = mean_returns_a * 100
+  ), 4
+)
+
+colnames(mean_table) <- colnames(ret1)[2:6]
+
+mean_table
+```
+
+Covariance
+```{r Q2a, echo=FALSE}
+cov_matrix_a
+```
+
+Standard-deviation
+```{r Q2a_1, echo=FALSE}
+vol <- sqrt(diag(cov_matrix_a))
+vol
+```
+
+Correlation
+
+```{r Q2a_2, echo=FALSE}
+corr <- cor(R_pct)
+corr
+```
+
+<!-- Skewness -->
+<!-- ```{r Q2a_3, echo=FALSE} -->
+
+<!-- library(e1071) -->
+<!-- skew <- apply( -->
+<!--   R_pct, -->
+<!--   2, -->
+<!--   function(x) skewness(x, na.rm = TRUE, type = 3) -->
+<!-- ) -->
+
+<!-- round(skew, 6) -->
+<!-- ``` -->
+
+<!-- Answer:  -->
+
+<!-- Daily return  -->
+
+<!-- `r sprintf("%s %.5f",colnames(ret1)[2], mean_returns_d[1])`% (5dp) -->
+<!-- `r sprintf("%s %.5f",colnames(ret1)[3], mean_returns_d[2])`% (5dp) -->
+<!-- `r sprintf("%s %.5f",colnames(ret1)[4], mean_returns_d[3])`% (5dp) -->
+<!-- `r sprintf("%s %.5f",colnames(ret1)[5], mean_returns_d[4])`% (5dp) -->
+<!-- `r sprintf("%s %.5f",colnames(ret1)[6], mean_returns_d[5])`% (5dp) -->
+<!-- \\ -->
+
+<!-- `r sprintf("%s %.3f",colnames(ret1)[2], mean_returns_a[1]*100)`% (3dp) -->
+<!-- `r sprintf("%s %.3f",colnames(ret1)[3], mean_returns_a[2]*100)`% (3dp) -->
+<!-- `r sprintf("%s %.3f",colnames(ret1)[4], mean_returns_a[3]*100)`% (3dp) -->
+<!-- `r sprintf("%s %.3f",colnames(ret1)[5], mean_returns_a[4]*100)`% (3dp) -->
+<!-- `r sprintf("%s %.3f",colnames(ret1)[6], mean_returns_a[5]*100)`% (3dp) -->
 
 :::
 :::
@@ -727,12 +789,8 @@ Answer:
 <!-- #   ) -->
 <!-- # ``` -->
 
-The variance–covariance matrix were also estimated using the same daily returns and annualised accordingly.
-The results show that the stocks have different levels of return and risk
 
-```{r Q2a, echo=FALSE}
-cov_matrix_a
-```
+
 
 ```{=latex}
 \newpage
