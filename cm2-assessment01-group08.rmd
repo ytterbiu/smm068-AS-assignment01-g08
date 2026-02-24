@@ -91,7 +91,7 @@ if (knitr::is_latex_output()) {
     fig.width = 6,
     fig.height = 4,
     dev = "pdf",
-    fig.pos = "ht",
+    fig.pos = "!ht",
     out.extra = ""
   )
 } else {
@@ -554,6 +554,7 @@ if (knitr::is_html_output()) {
 ```
 
 ```{=latex}
+\clearpage
 \newpage
 ```
 
@@ -590,7 +591,7 @@ $$
 \end{array}
 $$
 
-```{r Q2-working, echo=FALSE}
+```{r Q2-working, echo=FALSE, fig.pos="!ht"}
 # ==============================================================================
 # Q2(a) estimate all required statistics for the 5 stocks
 # ==============================================================================
@@ -695,10 +696,6 @@ Daily returns were calculated from the adjusted closing prices of the five stock
 The variance–covariance matrix were also estimated using the same daily returns and annualised accordingly.
 The results show that the stocks have different levels of return and risk
 
-<!-- prettier-ignore -->
-::: {.answer-wrapper}
-::: {.answer}
-
 Answer: 
 
 Mean(%)
@@ -764,9 +761,6 @@ corr
 <!-- `r sprintf("%s %.3f",colnames(ret1)[4], mean_returns_a[3]*100)`% (3dp) -->
 <!-- `r sprintf("%s %.3f",colnames(ret1)[5], mean_returns_a[4]*100)`% (3dp) -->
 <!-- `r sprintf("%s %.3f",colnames(ret1)[6], mean_returns_a[5]*100)`% (3dp) -->
-
-:::
-:::
 
 <!-- # ```{r, echo=FALSE} -->
 <!-- # df <- data.frame( -->
@@ -841,7 +835,7 @@ $$
 
 as arguments to the `solve.QP` function.
 
-```{r Q2b-working-Ardi}
+```{r Q2b-working-Ardi, fig.pos="!ht"}
 
 n_sec <- length(stocks)
 
@@ -1315,12 +1309,12 @@ knitr::kable(
   caption = "Comparison of expected value and variance across methods.",
   booktabs = TRUE,
   escape = FALSE,
+  position = "!ht",
   align = "lrr"
 ) %>%
   kable_styling(
     full_width = FALSE,
-    position = "center",
-    latex_options = "hold_position"
+    position = "center"
   )
 ```
 
@@ -1405,14 +1399,14 @@ sim_df %>%
   kable(
     booktabs = TRUE,
     escape = FALSE,
+    position = "!ht",
     align = "lcccc",
     linesep = c("", "", "", "", "\\addlinespace"),
     caption = "Monte Carlo convergence for $\\mathbb{E}[R_2]$ and $\\mathrm{Var}(R_2)$ with 95 percent confidence intervals (CI). See text for more information about the calculations used for these intervals."
   ) %>%
   kable_styling(
     full_width = FALSE,
-    position = "center",
-    latex_options = "hold_position"
+    position = "center"
   )
 
 ```
@@ -1608,6 +1602,7 @@ shortfall_transposed %>%
   kable(
     booktabs = TRUE,
     escape = FALSE,
+    position = "!ht",
     align = "lcc", # left align text & centre align numbers
     col.names = c("Asset", "0\\%", "-10\\%"),
     caption = "Summary of shortfall probabilities for assets 1 and 2. Note that the probabilities are given as percentages."
@@ -1616,8 +1611,7 @@ shortfall_transposed %>%
   add_header_above(c(" " = 1, "Shortfall probability (%)" = 2)) %>%
   kable_styling(
     full_width = FALSE,
-    position = "center",
-    latex_options = "hold_position"
+    position = "center"
   )
 ```
 
@@ -1670,13 +1664,13 @@ shortfall_long %>%
     escape = FALSE,
     linesep = c("", "", "", "\\addlinespace"),
     align = "lcc",
+    position = "!ht",
     col.names = c("Shortfall threshold", "$R_1$ (\\%)", "$R_2$ (\\%)"),
     caption = "Shortfall probabilities. Asset 2 has a higher probability of any loss, but beyond the crossover (approximately -5.77\\%) Asset 1 has the larger tail probability."
   ) %>%
   kable_styling(
     full_width = FALSE,
-    position = "center",
-    latex_options = "hold_position"
+    position = "center"
   )
 ```
 
@@ -2121,7 +2115,7 @@ each worksheet and describe the methodologies employed.
 
 ### About sheet: workbook guide and navigation {#app:about}
 
-```{r excel-about, echo=FALSE, fig.cap="The information users are greeted with when opening the spreadsheet. The sheet is split into three parts: (1) Key information, (2) a workbook map with hyperlinks, and (3) version control.", out.width="80%"}
+```{r excel-about, echo=FALSE, fig.cap="The information users are greeted with when opening the spreadsheet. The sheet is split into three parts: (1) Key information, (2) a workbook map with hyperlinks, and (3) version control.", out.width="80%", fig.pos="!ht"}
 knitr::include_graphics("fig/appendix-excel-about.png")
 ```
 
@@ -2143,7 +2137,7 @@ As shown in Figure \@ref(fig:excel-about), this sheet contains:
 
 ### Q1 sheet: raw adjusted close prices {#app:q1}
 
-```{r excel-q1, echo=FALSE, fig.cap="Components of sheet Q1.", out.width="80%"}
+```{r excel-q1, echo=FALSE, fig.cap="Components of sheet Q1.", out.width="80%", fig.pos="!ht"}
 knitr::include_graphics("fig/appendix-excel-q1.png")
 ```
 
@@ -2176,7 +2170,7 @@ returns, they do not prescribe a decision. To choose between Asset 1
 and Asset 2, we must map these returns to an investor's satisfaction
 using utility functions. As a rational investors goal is always to maximise
 expected utility, an asset that results in a *higher* utility score will be more
-desirable.
+desirable [@Bodie2024, ch. 6].
 
 ### Quadratic utility {-}
 
@@ -2213,7 +2207,7 @@ U(R)=\ln(1+R)
 $$
 
 A power utility function allows one to fine-tune the investor's risk appetite
-using the coefficient $\gamma$ (gamma):
+using the coefficient of relative risk aversion ($\gamma$):
 
 $$
 U(R) = \frac{(1+R)^{1-\gamma}}{1-\gamma}
@@ -2233,7 +2227,11 @@ With the exception of investors with a quadratic utility function (where both
 assets result in the same expected utility), asset 2 provides a higher expected
 utility than asset 1 and therefore would be selected by all investors considered
 here. The expected utility benefits of asset 2, relative to asset 1, increase as
-one becomes more risk averse.
+one becomes more risk averse. 
+
+The range of $\gamma$ values in Table \@ref(tab:exact-utility-table)were chosen 
+based upon values previously used in the literature 
+[@Clare201606; @Owadally202151].
 
 ```{r exact-utility-table, echo=FALSE, warning=FALSE, message=FALSE}
 # BE note: move up if we keep this section
@@ -2307,23 +2305,25 @@ results %>%
     caption = "Comparison of expected utility scores for returns generated by asset 1 ($R_1$) and asset 2 ($R_2$).",
     booktabs = TRUE,
     escape = FALSE,
+    position = "!ht",
   ) %>%
   kable_styling(
     full_width = FALSE,
-    position = "center",
-    latex_options = "hold_position"
+    position = "center"
   ) %>%
   column_spec(5, bold = TRUE)
 ```
 
 ### Visualising the decision boundary (power utility function) {-}
 
-By calculating the difference in expected utility $(\mathbb{E}\big[U(R_2)\big] -
-\mathbb{E}\big[U(R_1)\big])$ continuously across a spectrum of risk aversion, we
-can see exactly how the preference for positive skewness compounds as $\gamma$
-increases.
+The difference in expected utility 
+$(\mathbb{E}\big[U(R_2)\big] - \mathbb{E}\big[U(R_1)\big])$ for assets 1 and 2 
+is shown in Figure \@ref(fig:skewness-preference-plot) as a function of an 
+investors risk aversion. The expected utility of asset 2, relative to asset 1, 
+increases as a function of the coefficient of risk aversion (for 
+$0>\gamma \geq10$).
 
-```{r skewness-preference-plot, echo=FALSE, warning=FALSE, message=FALSE}
+```{r skewness-preference-plot, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Expected utility advantage as a function of risk aversion"}
 # 1. PDF for Asset 2 (Mixture)
 pdf_r2 <- function(x) {
   r2_p1 * dnorm(x, r2_mu1, r2_sd1) + r2_p2 * dnorm(x, r2_mu2, r2_sd2)
@@ -2372,13 +2372,13 @@ ggplot(plot_data, aes(x = Gamma, y = Diff)) +
   geom_ribbon(aes(ymin = pmin(Diff, 0), ymax = 0), fill = "red", alpha = 0.1) +
   annotate(
     "text", x = 5, y = max(plot_data$Diff) * 0.75,
-    label = "Prefer Asset 2 (positive skew)", color = "blue", fontface = "italic"
+    label = "Prefer Asset 2", color = "blue", fontface = "italic"
   ) +
   labs(
     title = "Expected utility advantage",
     subtitle = "Comparing expected utility across varying levels of risk aversion",
     x = expression(paste("Risk aversion coefficient (", gamma, ")")),
-    y = expression(paste("Utility advantage (", E[U(R[2])] - E[U(R[1])], ")"))
+    y = expression(paste("Utility advantage ", (E*group("[", U(R[2]), "]") - E*group("[", U(R[1]), "]")),))
   ) +
   theme_bw()
 ```
@@ -2469,6 +2469,6 @@ verified by the (human) group members.
 [^utility-skew]: 
     This is demonstrated in the appendix (\S\@ref(apd-utility-theory) and Table
     \@ref(tab:exact-utility-table)) where we show that a constant relative risk
-    aversion (CRRA) utility function with $\gamma > 0$ penalises the negative
-    skewness of Asset 1, mathematically confirming it as the inferior choice for
-    risk-averse investors.
+    aversion (CRRA) utility function with $\gamma > 0$ mathematically confirms 
+    that for risk-averse investors asset 1 results in a lower expected utility 
+    that asset 2.

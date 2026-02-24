@@ -34,6 +34,7 @@
 *.toc
 *.xdv
 *.blg
+*.xls*
 
 peer-assessment/*
 
@@ -42,3 +43,4 @@ figure-testing.R
 HSI20180101to20241231.csv
 *.dcf
 20260209-power-utility-theory-query.png
+utility_functions.R

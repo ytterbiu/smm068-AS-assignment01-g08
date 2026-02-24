@@ -79,6 +79,10 @@ install.packages("kableExtra")
 rmarkdown::render("cm2-assessment01-group08.Rmd", output_format = "all")
 ```
 
+```{r}
+render_clean("cm2-assessment01-group08.Rmd", output_format = "all")
+```
+
 #### Render to a specific format:
 
 ```{r}
