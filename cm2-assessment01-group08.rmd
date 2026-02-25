@@ -322,12 +322,10 @@ tail(prices)
 write.csv(prices, "Q1.csv", row.names = FALSE)
 ```
 
-_Download 3 years of daily prices for 5 U.S. stocks. [5 marks]_
+<!-- _Download 3 years of daily prices for 5 U.S. stocks. [5 marks]_ -->
 
 - **Information resource used:** Yahoo finance
-
-- **URL:** https://finance.yahoo.com
-
+- **URL:** https://finance.yahoo.com (accessed 2026-01-28)
 - **Name and ticker code for stocks** (in alphabetical order):
   - AIG (American International Group, Inc)
   - GS (The Goldman Sachs Group, Inc.)
@@ -336,10 +334,8 @@ _Download 3 years of daily prices for 5 U.S. stocks. [5 marks]_
   - NEE (NextEra Energy, Inc)
 
 - **Date range:** 1 January 2023 – 31 December 2025
-
 - **Price label used:** Adjusted closing price (to account for corporate actions such as splits/dividends)
-
-- **Rationale:** The five stocks were chosen to provide diversification across industries (technology, healthcare, utilities/renewables, insurance/financial services, and investment banking) whilst ensuring all stocks were from large, U.S. listed, liquid companies with continuous daily price histories. 
+- **Rationale:** The five stocks were chosen to provide diversification across industries (technology, healthcare, utilities/renewables, insurance/financial services, and investment banking) from large, U.S. listed, liquid companies with continuous daily price histories.
 
 ```{r Q1-table-for-html, include=knitr::is_html_output(), echo=FALSE, message=FALSE, warning=FALSE}
 if (knitr::is_html_output()) {
@@ -365,69 +361,8 @@ if (knitr::is_html_output()) {
 }
 ```
 
-```{r Q1-stock-price-plot, eval = TRUE, echo = FALSE, fig.width=8, fig.height=5, fig.cap = "Adjusted daily closing prices for selected stocks (2023–2025).", fig.pos='!ht'}
-# # Transform to long format for ggplot
-# df_long <- prices %>%
-#   pivot_longer(
-#     cols = -Date,
-#     names_to = "Ticker",
-#     values_to = "Price"
-#   ) %>%
-#   mutate(Date = as.Date(Date))
-#
-# # theme elements
-# base_theme <- theme_bw() +
-#   theme(
-#     plot.title = element_text(hjust = 0.5, face = "bold"),
-#     legend.position = "bottom",
-#     panel.grid.minor = element_blank(),
-#     plot.margin = margin(10, 10, 10, 10)
-#   )
-#
-# pal <- RColorBrewer::brewer.pal(8, "Dark2")
-# my_cols <- setNames(pal[c(1, 2, 3, 5, 4)], sort(unique(df_long$Ticker)))
-#
-# # plot
-# p <- ggplot(df_long, aes(x = Date, y = Price, color = Ticker)) +
-#   geom_line(linewidth = 0.8, alpha = 0.9) +
-#   scale_color_manual(values = my_cols) +
-#   labs(
-#     title = "Performance of selected stocks over 3 years selected here...",
-#     subtitle = paste(
-#       "Adjusted closing prices:",
-#       min(df_long$Date),
-#       "to",
-#       max(df_long$Date)
-#     ),
-#     x = "Date",
-#     y = "Adjusted Close (USD)",
-#     color = "Stock:"
-#   ) +
-#   scale_x_date(date_labels = "%b %Y", date_breaks = "6 months") +
-#   base_theme
-#
-# if (knitr::is_html_output()) {
-#   # ggplotly(p)
-#   p_html <- p + geom_line(linewidth = 0.5, alpha = 0.9)
-#   ggplotly(p_html, height = 420) %>%
-#     layout(
-#       title = list(x = 0.5, xanchor = "center"),
-#       legend = list(
-#         orientation = "h",
-#         x = 0.5,
-#         xanchor = "center",
-#         y = -0.2,
-#         yanchor = "top"
-#       ),
-#       margin = list(t = 70, b = 90, l = 70, r = 20)
-#     ) %>%
-#     config(responsive = TRUE)
-# } else {
-#   p
-# }
-```
 
-```{r Q1-stock-price-plots, eval=TRUE, echo=FALSE, fig.width=8, fig.height=9, fig.cap="Adjusted daily closing prices (top) and rebased performance (bottom) for selected stocks (2023–2025).", fig.pos='!ht', message=FALSE, warning=FALSE}
+```{r Q1-stock-price-plots, eval=TRUE, echo=FALSE, fig.width=8, fig.height=6.6, fig.cap="Adjusted daily closing prices (top) and rebased performance (bottom) for selected stocks (2023–2025).", fig.pos='!ht', message=FALSE, warning=FALSE}
 # Transform to long format for ggplot
 df_long <- prices %>%
   pivot_longer(
@@ -508,9 +443,6 @@ p_reb <- ggplot(df_rebased, aes(x = Date, y = Rebased, color = Ticker)) +
   base_theme
 
 if (knitr::is_html_output()) {
-  library(plotly)
-  library(htmltools)
-
   # slightly thinner lines for plotly
   p_abs_html <- p_abs + geom_line(linewidth = 0.5, alpha = 0.9)
   p_reb_html <- p_reb + geom_line(linewidth = 0.5, alpha = 0.9)
@@ -545,7 +477,6 @@ if (knitr::is_html_output()) {
 
   tagList(w1, tags$br(), w2)
 } else {
-  library(patchwork)
 
   (p_abs / p_reb) +
     plot_layout(guides = "collect") &
@@ -656,7 +587,7 @@ N_return <- length(mean_returns_a)
 
 ```
 
-## Stock statistics Q2(a)
+## Stock statistics Q2(a) {#qtwoa}
 
 In preparation for mean-variance portfolio optimization, estimate all required
 statistics for the 5 stocks whose price data you downloaded in Q1.
@@ -790,7 +721,7 @@ corr
 \newpage
 ```
 
-## Q2b
+## Q2b {#qtwob}
 
 We attempt to find portfolio weights $w$ that minimise the portfolio variance while yielding the target mean return $E$,
 
@@ -1183,7 +1114,7 @@ R_{2}
 \end{cases}
 $$
 
-## Calculate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. _[5 marks]_ {#qthreePtA}
+## Calculate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$ {#qthreePtA}
 
 $$
 \begin{array}{ll}
@@ -1237,7 +1168,7 @@ Answers: $\mathbb{E}[R_{2}] =$ `r fmt_trunc_ellip(r2_mu_bar)`, $\text{Var}(R_{2}
 \newpage
 ```
 
-## Use **R** to estimate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$. _[5 marks]_ {#qthreePtB}
+## Use **R** to estimate $\mathbb{E}[R_{2}]$ and $\mathrm{Var}(R_{2})$ {#qthreePtB}
 
 ```{r Q3b, echo=FALSE, results = 'hide', fig.cap="Code"}
 #  =================
@@ -1425,7 +1356,7 @@ $\text{Var}(R_{2}) = \mathbb{E}[R_{2}^2] - (\mathbb{E}[R_{2}])^2$.
 <!-- # Q3(C)  Calculate the shortfall probabilities for asset 1
 <!-- # ================================================================== -->
 
-## Calculate the shortfall probabilities for asset 1, assuming a benchmark return of: {#qthreePtC}
+## Shortfall probabilities for asset 1 {#qthreePtC}
 
 $$
 \begin{array}{ll}
@@ -1466,7 +1397,7 @@ results_r2 <- sapply(thresholds, calc_shortfall_r2)
 <!-- # Q3(C)(i)  benchmark 0%
 <!-- # ================================================================== -->
 
-### benchmark = 0%,
+### Assuming a benchmark return of 0%
 
 <!-- prettier-ignore -->
 \begin{align*} 
@@ -1488,7 +1419,7 @@ Answer: `r sprintf("%.3f", results_r1["T1"]*100)`% (3dp)
 <!-- # Q3(C)(ii)  benchmark -10%
 <!-- # ================================================================== -->
 
-### benchmark = -10%.
+### Assuming a benchmark return of -10%
 
 <!-- prettier-ignore -->
 \begin{align*} 
@@ -1510,9 +1441,7 @@ Answer: `r sprintf("%.3f", results_r1["T2"]*100)`% (3dp)
 <!-- # Q3(d)  Calculate the shortfall probabilities for asset 2
 <!-- # ================================================================== -->
 
-## Repeat part Q3c above for asset 2. {#qthreePtD}
-
-_[4 marks]_
+## Repeat part Q3c above for asset 2 {#qthreePtD}
 
 $$
 \begin{array}{ll}
@@ -1535,7 +1464,7 @@ $$
 <!-- # Q3(d)(i)  benchmark 0%
 <!-- # ================================================================== -->
 
-### benchmark = 0%,
+### Assuming a benchmark return of 0%,
 
 <!-- prettier-ignore -->
 \begin{align*} 
@@ -1559,9 +1488,7 @@ Answer: `r sprintf("%.3f", results_r2["T1"]*100)`% (3dp)
 <!-- # Q3(d)(ii)  benchmark -10%
 <!-- # ================================================================== -->
 
-### benchmark = -10%,
-
-benchmark =-10%
+### Assuming a benchmark return of -10%,
 
 <!-- prettier-ignore -->
 \begin{align*} 
@@ -1582,7 +1509,7 @@ Answer: `r sprintf("%.3f", results_r2["T2"]*100)`% (3dp)
 :::
 
 
-```{r qthr-pt-CD-summary, echo=FALSE}
+```{r qthr-pt-CD-summary, echo=FALSE, include=FALSE}
 # 1. Prepare data
 shortfall_transposed <- data.frame(
   Label = c("Asset 1", "Asset 2"),
@@ -1605,7 +1532,7 @@ shortfall_transposed %>%
     position = "!ht",
     align = "lcc", # left align text & centre align numbers
     col.names = c("Asset", "0\\%", "-10\\%"),
-    caption = "Summary of shortfall probabilities for assets 1 and 2. Note that the probabilities are given as percentages."
+    caption = "Shortfall probabilities for asset 1 and 2. Note that the probabilities are given as percentages."
   ) %>%
   # Add the grouped header
   add_header_above(c(" " = 1, "Shortfall probability (%)" = 2)) %>%
@@ -1618,14 +1545,13 @@ shortfall_transposed %>%
 
 ### Comments {-}
 
-The results from part \@ref(qthreePtC) and \@ref(qthreePtD) are summarised in
-Table \@ref(tab:qthr-pt-CD-summary). Table \@ref(tab:qthr-pt-CD-extension)
-extends this analysis to a broader range of thresholds. 
+The results from part \@ref(qthreePtC) and \@ref(qthreePtD) are summarised and 
+expanded upon in Table \@ref(tab:qthr-pt-CD-extension).
 
 While Asset 2 has a higher probability of moderate losses (returns between
 roughly −5.77% and 0%) Asset 1 carries a higher probability of severe drawdowns
-(any loss < -5.77%), and despite returns from both assets having the same
-variance, Asset 1 presents a greater danger of catastrophic loss.
+(any loss < -5.77%) and consequently, despite both assets having the same
+variance, Asset 1 has a greater risk of catastrophic loss.
 
 ```{r qthr-pt-CD-extension, echo=FALSE}
 thresholds <- c(
@@ -1663,10 +1589,10 @@ shortfall_long %>%
     booktabs = TRUE,
     escape = FALSE,
     linesep = c("", "", "", "\\addlinespace"),
-    align = "lcc",
+    align = "lrr",
     position = "!ht",
     col.names = c("Shortfall threshold", "$R_1$ (\\%)", "$R_2$ (\\%)"),
-    caption = "Shortfall probabilities. Asset 2 has a higher probability of any loss, but beyond the crossover (approximately -5.77\\%) Asset 1 has the larger tail probability."
+    caption = "Shortfall probabilities for asset 1 and 2. Asset 2 has a higher probability of any loss but Asset 1 has a larger tail probability below a shortfall threshold of -5.77\\%."
   ) %>%
   kable_styling(
     full_width = FALSE,
@@ -1682,7 +1608,7 @@ shortfall_long %>%
 <!-- # Q3(e)  Plot pdfs of returns for assets 1 and 2 on the same axes
 <!-- # ================================================================== -->
 
-## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes. _[3 marks]_ {#qthreePtE}
+## Use **R** to plot the probability density functions of returns for assets 1 and 2 on the same axes {#qthreePtE}
 
 The probability density functions of returns for assets 1 and 2 are shown in
 Figure \@ref(fig:Q3-part-e-ggplot).  
@@ -1871,7 +1797,7 @@ dominating Asset 1 in the tails.
 <!-- # Q3(f) plot the cdfs of returns for assets 1 and 2 on the same axes.
 <!-- # ================================================================== -->
 
-## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes. _[2 marks]_ {#qthreePtF}
+## Use **R** to plot the cumulative density functions of returns for assets 1 and 2 on the same axes {#qthreePtF}
 
 The probability density functions of returns for assets 1 and 2 are shown in
 Figure \@ref(fig:Q3-part-f-ggplot).  
@@ -2049,7 +1975,7 @@ Asset 1 carries the distinct tail risk of catastrophic drawdown.
 <!-- # Q3(g)  comment on the risk involved in asset 2, compared to asset 1
 <!-- # ================================================================== -->
 
-## Based on your answers to parts \@ref(qthreePtA)–\@ref(qthreePtF) above, comment on the risk involved in asset 2, compared to asset 1. _[4 marks]_ {#qthreePtG}
+## Based on your answers to parts \@ref(qthreePtA)–\@ref(qthreePtF) above, comment on the risk involved in asset 2, compared to asset 1 {#qthreePtG}
 
 Assets 1 & 2 possess a different risk profile, despite their identical means and
 variances. Figure \@ref(fig:Q3-part-e-ggplot) reveals that Asset 1 is symmetric
@@ -2096,26 +2022,66 @@ TBI -->
 
 # (APPENDIX) Appendices {-}
 
+# Bonus exploration: R Shiny dashboard {#apd-dashboard}
+
+To explore how the efficient frontier changes as one uses different stocks over
+different time periods, we created a dashboard that allows the workflow
+described in this report to be applied quickly to other stock market indices.
+
+We developed an interactive R Shiny dashboard, hosted on
+https://www.shinyapps.io/, which provides a dynamic interface for rapid
+comparative analysis. The dashboard is available via:
+
+- Link TBI
+
+<!-- Figure \@ref(fig:appendixdashboard1) shows the dashboard start page. Clicking -->
+<!-- Run Analysis loads information for the entered Yahoo Finance ticker (with the -->
+<!-- default set to `^IXIC`). -->
+
+<!-- # ```{r appendixdashboard1, echo=FALSE, purl=FALSE, out.width="70%", fig.cap="The R Shiny dashboard start page. Clicking ‘Run Analysis’ will load information for the entered Yahoo Finance ticker."} -->
+<!-- # knitr::include_graphics("fig/appendix-dashboard-1.pdf") -->
+<!-- # ``` -->
+<!-- #  -->
+<!-- # ```{r appendixdashboard2, echo=FALSE, purl=FALSE, out.width="100%", fig.cap="Annotated interface of the R Shiny dashboard, highlighting key features such as flexible evaluation windows, the ability to exclude a specific outlier region, and view various elements of the project shown in different tabs. These elements are numbered here and described in the text."} -->
+<!-- # knitr::include_graphics("fig/appendix-dashboard-2.pdf") -->
+<!-- # ``` -->
+
+<!-- Figure \@ref(fig:appendixdashboard2) presents an annotated view of the user -->
+<!-- interface. The dashboard includes (1) a Ticker Selection field that accepts -->
+<!-- standard Yahoo Finance symbols; (2–4) Data Cleaning controls, where users can -->
+<!-- define the study range and mask a specific outlier period (2020-02-24 to -->
+<!-- 2020-03-23 in the case of our report); (5) Bootstrap Settings, allowing users to -->
+<!-- choose the number of repetitions (to balance accuracy and computation time); and -->
+<!-- (6) Analysis Tabs, which display the cleaned data, normality tests, and -->
+<!-- independence diagnostics. -->
+
+Future development may include support for multiple exclusion windows and
+optimisation of the bootstrapping algorithm, which is currently
+resource-intensive for large numbers of repetitions. While the present
+implementation mirrors the project’s core analysis, there is also scope to
+extend this to incorporate additional methods, such as assessing normality using
+bootstrapped kurtosis estimates and adding functionality to vary the m value in
+the m-out-of-n bootstrap (currently hard coded as m=13). In addition to the
+adjusted closing price used in this project, future enhancements could also
+allow users to select alternative price series (for example, open, close, or
+intraday mid prices) and different aggregation frequencies (for example, daily
+or weekly) within the app.
+
+```{=latex}
+\clearpage
+\newpage
+```
+
 # Supplemental methodology {#apd-supplementary-methods}
 
-<!-- ## Selection of stocks -->
-
-<!-- Five american insurance stocks were selected... -->
-
-<!-- - They were selected on the basis of... -->
-<!-- - Probably ~2 paragraphs here (& could potentially include graph here rather -->
-<!--   than under question 1? Honestly don't know - let's discuss). -->
-
-<!-- ## Additional figures (TBC) -->
 ## Spreadsheet implementation (Excel) {#app:excel-impl}
 
-This subsection within the appendix documents how our Excel workbook is
-organised and how key quantities are computed. Here we outline the content of 
-each worksheet and describe the methodologies employed.
+This subsection outlines the structure of the accompanying Excel workbook, using
+screenshots to demonstrate the layout and contents of each sheet.
 
 ### About sheet: workbook guide and navigation {#app:about}
 
-```{r excel-about, echo=FALSE, fig.cap="The information users are greeted with when opening the spreadsheet. The sheet is split into three parts: (1) Key information, (2) a workbook map with hyperlinks, and (3) version control.", out.width="80%", fig.pos="!ht"}
+```{r excel-about, echo=FALSE, fig.cap="The information users are greeted with when opening the spreadsheet. The 'about' sheet is split into three parts: (1) key information, (2) a workbook map with hyperlinks, and (3) version control.", out.width="80%", fig.pos="!ht"}
 knitr::include_graphics("fig/appendix-excel-about.png")
 ```
 
@@ -2126,10 +2092,10 @@ As shown in Figure \@ref(fig:excel-about), this sheet contains:
    when the file is opened.
 1. A workbook map (or navigation table) that contains a clickable link to each
    worksheet:
-   - Q1: raw imported price data
-   - Q1-Fig: figures showing returns for chosen stocks
-   - Q2a: returns + annualised statistics
-   - Q2b: efficient frontier + global minimum variance 
+   - `Q1`: raw imported price data
+   - `Q1-Fig`: figures showing returns for chosen stocks
+   - `Q2a`: returns + annualised statistics
+   - `Q2b`: efficient frontier + global minimum variance 
    (estimated using 3 separate methods)
 
 1. Version control information, including a lightweight audit trail with version
@@ -2137,7 +2103,7 @@ As shown in Figure \@ref(fig:excel-about), this sheet contains:
 
 ### Q1 sheet: raw adjusted close prices {#app:q1}
 
-```{r excel-q1, echo=FALSE, fig.cap="Components of sheet Q1.", out.width="80%", fig.pos="!ht"}
+```{r excel-q1, echo=FALSE, fig.cap="Overview of sheet Q1.", out.width="80%", fig.pos="!ht"}
 knitr::include_graphics("fig/appendix-excel-q1.png")
 ```
 
@@ -2151,12 +2117,160 @@ This sheet (Figure \@ref(fig:excel-q1)) contains:
 3. Additional information about the stocks, including the data source, URL,
    ticker list, date range, and price label.
 
-### Q1-fig sheet:
+### Q1-fig sheet: price charts and rebased series {#app:q1fig}
 
-### Q2a sheet:
+```{r excel-q1-fig, echo=FALSE, fig.cap="Overview of sheet Q1-fig.", out.width="100%", fig.pos="!ht"}
+knitr::include_graphics("fig/appendix-excel-q1-fig.png")
+```
 
-### Q2b sheet:
+As shown in Figure \@ref(fig:excel-q1-fig), the `Q1-fig` sheet builds upon `Q1` 
+and contains: 
 
+1. A figure showing the adjusted close prices over 3 years for each stock.
+2. The rebased adjusted close over the same period.
+3. The numerical rebased series used to generate the rebased chart.
+
+### Q2a sheet: daily returns and statistics {#app:q2a}
+
+```{r excel-q2a, echo=FALSE, fig.cap="Overview of sheet Q2a.", out.width="100%", fig.pos="!ht"}
+knitr::include_graphics("fig/appendix-excel-q2a.png")
+```
+
+The `Q2a` sheet shown in Figure \@ref(fig:excel-q2a) mirrors \@ref(qtwoa) and 
+contains:
+
+1. Daily arithmetic returns computed from adjusted close prices in `Q1`.
+2. Required statistics for mean-variance portfolio optimisation, including
+   - expected returns (daily and annualised)
+   - variance–covariance matrix (annualised)
+   - standard deviation for each stock (annualised)
+   - correlation matrix
+
+3. Additional information about the statistics calculated.
+4. Figures showing the daily returns for each stock.
+
+### Q2b sheet: efficient frontier and global minimum variance {#app:q2b}
+
+This sheet computes the global minimum-variance portfolio and plots the
+efficient frontier using three approaches:
+
+1. Excel Solver & VBA (GRG Nonlinear)
+1. Monte Carlo (N=5000) 
+1. Sequential grid (~41,000 weights)
+
+```{r excel-q2b, echo=FALSE, fig.cap="Partial view of sheet Q2b. The full data for the Solver and VBA, and all of the Monte Carlo and sequential grid data are too large to display via screenshot. They are located to the east of the worksheet.", out.width="100%", fig.pos="!ht"}
+knitr::include_graphics("fig/appendix-excel-q2b.png")
+```
+
+Figure \@ref(fig:excel-q2b) shows key parts of `Q2b`, including:
+
+1. The stock statistics required for the mean-variance optimisation, including the annualised expected returns vector and the annualised
+   variance–covariance matrix (imported/referenced from `Q2a`). These quantities
+   are used throughout the sheet to compute portfolio expected return and
+   portfolio risk (standard deviation).
+   
+2. A global minimum-variance (GMV) portfolio summary for each method, including 
+   the expected return and risk (standard deviation)
+   under the three approaches (Solver & VBA, Monte Carlo, and sequential grid),
+   along with the corresponding portfolio weights for each method. All
+   methods enforce full investment (\(\sum_i w_i = 1\)) and non-negativity
+   (\(w_i \ge 0\), i.e., no short-selling).
+   
+3. Figures showing the efficient frontier generated under each method.
+   The sheet also includes a comparison figure overlaying the efficient
+   frontiers to visualise agreement across methods (only the Solver & VBA
+   individual plot is shown in Figure \@ref(fig:excel-q2b)).
+
+4. The start of the Solver & VBA efficient frontier calculation table containing
+   the target return grid and the corresponding optimal weights obtained by 
+   automating Solver via VBA. The full Solver & VBA table, as
+   well as the full Monte Carlo and sequential-grid portfolio tables, are too
+   large to display in the screenshot and are located to the east of the visible
+   worksheet area.
+
+5. Additional information about the efficient frontier calculations.
+
+### Additional comments {-} 
+
+The Solver interface and the manual settings used to compute a single efficient
+portfolio (for a given target expected return) are shown in Figure
+\@ref(fig:excel-q2b-solver). This approach required one to manually update
+the target return constraint and re-run Solver for each point on the efficient
+frontier, which is impractical for generating a dense set of frontier points.
+
+An automated Solver procedure was implemented using VBA to loop
+over a grid of target returns, run Solver programmatically, and output the
+resulting optimal portfolio weights. The VBA implementation is reproduced below. 
+
+*(Authors' note: VBA macros cannot be embedded within the submitted `.xlsx` 
+file format so the code is documented in this appendix rather than stored inside 
+the workbook.)*
+
+```{r excel-q2b-solver, echo=FALSE, fig.cap="The location of the solver interface in Microsoft Excel and the settings used to manually calculate the portfolio weights for a given expected return (minimising standard deviation). ", out.width="80%", fig.pos="!ht"}
+knitr::include_graphics("fig/appendix-excel-q2b-solver.png")
+```
+
+```vb
+' Solver VBA code
+Option Explicit
+Dim r As Long
+Dim targetCell As String, changeCells As String
+Dim sumCell As String, portRetCell As String, targetRetCell As String
+    
+Sub EfficientFrontier_Run()
+
+    Application.ScreenUpdating = False
+    Application.EnableEvents = False
+    Application.Calculation = xlCalculationManual
+    
+    For r = 10 To 209
+        
+        targetCell = "$R$" & r
+        changeCells = "$K$" & r & ":$O$" & r
+        sumCell = "$P$" & r
+        portRetCell = "$Q$" & r
+        targetRetCell = "$J$" & r
+       
+        Range(changeCells).ClearContents
+        Application.Run "Solver.xlam!SolverReset"
+        
+        Application.Run "Solver.xlam!SolverOk", targetCell, 2, 0, changeCells
+        
+        Application.Run "Solver.xlam!SolverAdd", sumCell, 2, "1"
+        
+        Application.Run "Solver.xlam!SolverAdd", portRetCell, 2, targetRetCell
+        
+        Application.Run "Solver.xlam!SolverAdd", changeCells, 3, "0"
+        
+        Application.Run "Solver.xlam!SolverSolve", True
+        Application.Run "Solver.xlam!SolverFinish", 1
+        
+    Next r
+    
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+    Application.ScreenUpdating = True
+    
+End Sub
+```
+
+Additionally, the Monte Carlo simulation requires random portfolio weights. To
+ensure results were reproducible, VBA was used to generate the random numbers
+using a fixed seed before constructing and normalising the random weights.
+The VBA code used for this is shown below.
+
+```vb
+' Monte Carlo VBA code
+Dim r As Long, c As Long
+Sub InitRandomWeights()
+    Randomize 123   'set.seed 123
+    For r = 10 To 5004
+        For c = Range("V1").Column To Range("Z1").Column
+            Cells(r, c).Value = Rnd
+        Next c
+    Next r
+End Sub
+```
 
 ## Examining \@ref(qthreePtG) through the lens of utility {#apd-utility-theory}
 
@@ -2229,7 +2343,7 @@ utility than asset 1 and therefore would be selected by all investors considered
 here. The expected utility benefits of asset 2, relative to asset 1, increase as
 one becomes more risk averse. 
 
-The range of $\gamma$ values in Table \@ref(tab:exact-utility-table)were chosen 
+The range of $\gamma$ values in Table \@ref(tab:exact-utility-table) were chosen 
 based upon values previously used in the literature 
 [@Clare201606; @Owadally202151].
 
