@@ -263,6 +263,18 @@ fmt_trunc_ellip <- function(
   out[is.na(x)] <- NA_character_
   out
 }
+#####################################
+# function: function to format 6dp numbers with a space after the 3rd decimal 
+# digit
+# Usage (in-line): TBI
+# Usage (console): TBI
+#####################################
+format_spaced_6dp <- function(x) {
+  # Format to 6 decimal places
+  s <- sprintf("%.6f", x)
+  # Insert space between the first 3 and last 3 decimal digits
+  sub("(\\.[0-9]{3})([0-9]{3})$", "\\1 \\2", s)
+}
 ```
 
 # Downloading the data
@@ -491,15 +503,9 @@ if (knitr::is_html_output()) {
 
 # Portfolio optimisation
 
-Note: average daily returns were converted to annualised units. (foot note here
-recognising alternative ways of doing this, but stating that this is the way we
-chose).
-
-$$
-z_{ann} = z_{daily} \times 252
-$$
-
-
+Note: Average daily returns were converted to annualised units and a standard 
+252 trading day multiplier was chosen for consistency 
+(i.e., $z_{ann} = z_{daily} \times 252$).
 
 $$
 \begin{array}{ll}
@@ -514,208 +520,120 @@ $$
 \text{Standard deviation of portfolio return }
   & \sigma_p^2 = \sum_{i=1}^{N} x_i^2 \sigma_i^2 + 2 \sum_{i=1}^{N-1}
     \sum_{j=i+1}^{N} x_i x_j \rho_{ij} \sigma_i \sigma_j \\[6pt]
-\text{Constraints 1}
+\text{Constraint 1}
   & \sum_{i=1}^{N} x_i = 1  \\[6pt]
-\text{Constraints 2}
-  & \sum_{i=1}^{N}x_i\overline{R_i} = E \\[6pt]
+\text{Constraint 2}
+  & \sum_{i=1}^{N}x_i\overline{R}_i = E \\[6pt]
 \hline
 \end{array}
 $$
 
-```{r Q2-working, echo=FALSE, fig.pos="!ht"}
+
+```{r Q2a, echo=FALSE, fig.pos="!ht"}
 # ==============================================================================
 # Q2(a) estimate all required statistics for the 5 stocks
 # ==============================================================================
 
-# prices_mat <- as.matrix(prices[, -1])
-# returns <- log(prices_mat[-1, ]) - log(prices_mat[-nrow(prices_mat), ])
-#
-# colnames(returns) <- colnames(prices_mat)
-#
-# mean_returns_d <- colMeans(returns)
-# cov_matrix_d <- cov(returns)
-# sd_d  <- sqrt(diag(cov_matrix_d))
-#
-# # Q2(a)_ annual expectation and covariance
-#
+# Calculate discrete daily returns and drop the first NA row
+df_returns <- prices %>%
+  arrange(Date) %>%
+  mutate(across(-Date, ~ .x / lag(.x) - 1)) %>%
+  drop_na()
 
-# drop date column
-px <- prices[, -1]
+# Annualisation factor
+ANN_FACTOR <- 252
 
-#%returns
-data1 <- lapply(px, function(x) {
-  ROC(as.numeric(x), type = "discrete") 
-})
+# Estimate Expected Returns
+mean_returns_d <- df_returns %>% select(-Date) %>% colMeans()
+mean_returns_a <- mean_returns_d * ANN_FACTOR
 
-ret1 <- as.data.frame(do.call(cbind, data1))
-colnames(ret1) <- colnames(px)
+# Estimate Variance-Covariance Matrix
+cov_matrix_d <- cov(df_returns %>% select(-Date))
+cov_matrix_a <- cov_matrix_d * ANN_FACTOR
 
-
-# remove the first row of missing values
-ret1 <- ret1[-1, , drop = FALSE]
-
-# add dates column
-ret1 <- data.frame(Date = prices$Date[-1], ret1)
-
-# plot the data
-pander(head(ret1), split.table = Inf)
-
-# convert to long
-
-ret_long = pivot_longer(ret1, cols = -c(Date), values_to = "Return", names_to = "Stock")
-
-# plot
-
-port_p1 = ggplot(ret_long, aes(Date, Return, color = Stock)) + geom_path(stat = "identity") +
-    facet_grid(Stock ~ .) + theme_minimal() + labs(x = "Date", y = "Returns")
-port_p1
-
-R_pct <- as.matrix(ret1[, -1])
-
-mean_returns_d <- colMeans(R_pct)
-cov_matrix_d   <- cov(R_pct)
-sd_d           <- sqrt(diag(cov_matrix_d))
-
-# BE note to check: why factors of 3/100?
-# /3 to get 1 year's worth of data
-# then *100 to get 1 year as a %
-# - Wait for Ardi's attempt before editing...
-mean_returns_a <- mean_returns_d * nrow(R_pct) * 252
-cov_matrix_a <- cov_matrix_d* nrow(R_pct) * 252
-sd_a <- sd_d*sqrt(cov_matrix_d* nrow(R_pct) * 252)
-N_return <- length(mean_returns_a)
-
+# Estimate Standard Deviations (Volatilities)
+sd_a <- sqrt(diag(cov_matrix_a))
 ```
 
-## Stock statistics Q2(a) {#qtwoa}
+## Stock statistics {#qtwoa}
 
-In preparation for mean-variance portfolio optimization, estimate all required
-statistics for the 5 stocks whose price data you downloaded in Q1.
+Required statistics for the 5 selected stocks were calculated in preparation for 
+mean-variance portfolio optimisation. Daily returns were calculated
+from the adjusted closing prices. The expected returns and variance-covariance
+matrix were estimated using the sample mean and covariance of these daily
+returns, scaled by 252 to annualise them.
 
-<!-- - Required statistics include? -->
-<!-- - Mean: -->
-<!-- - Variance: -->
-<!-- - Skewness: -->
-<!-- - Kurtosis / excess kurtosis?: -->
-<!-- - Covariance table -->
+### Expected annual returns {-}
 
-
-
-```{r Q2a-working-Ardi}
-
-df_day_returns <- prices |>
-  arrange(Date) |> 
-  mutate(across(all_of(stocks), ~  .x / lag(.x) - 1 ))
-
-# Multiply by 252 trading days in a year to convert daily return to annual
-ANNUALISED.FACTOR <- 252
-
-mean_returns_a <- df_day_returns |>
-    summarize(across(where(is.numeric), ~ mean(.x, na.rm=TRUE) * ANNUALISED.FACTOR )) |>
-    unlist()
-
-# Annualised covariance matrix 
-
-cov_matrix_a <- cov(as.matrix(df_day_returns[-1,-1])) * ANNUALISED.FACTOR
-
-```
-
-
-
-Daily returns were calculated from the adjusted closing prices of the five stocks. The expected returns were obtained by taking the average of the daily returns and the annualised.
-
-The variance–covariance matrix were also estimated using the same daily returns and annualised accordingly.
-The results show that the stocks have different levels of return and risk
-
-Answer: 
-
-Mean(%)
 ```{r, echo=FALSE}
-library(knitr)
-
-mean_table <- round(
-  rbind(
-    Daily_Return  = mean_returns_d * 100,
-    Annual_Return = mean_returns_a * 100
-  ), 4
+# Using simple kable tables for these statistics.
+# Annoying bug is the use of bold text in rmd breaks the monospacing. Without 
+# bold text the pdf renders nicely with numbers all aligned. Assessment 
+# guidelines state the answers must be in bold, so have done this below, but it 
+# doesn't look as professional as it could ¯\_(ツ)_/¯. 
+# 
+# Opted not to combine expected annual returns and standard deviation to mirror
+# format used in spreadsheet.
+ret_table <- data.frame(
+  Stock = names(mean_returns_a),
+  `Annual Return` = sprintf("**%.2f%%**", mean_returns_a * 100),
+  check.names = FALSE
 )
 
-colnames(mean_table) <- colnames(ret1)[2:6]
-
-mean_table
+kable(
+  ret_table,
+  format = "markdown",
+  align = c("l", "c"),
+  col.names = c("Stock", "Expected returns (annualised)")
+)
 ```
 
-Covariance
-```{r Q2a, echo=FALSE}
-cov_matrix_a
+### Annualised covariance matrix {-}
+
+```{r, echo=FALSE}
+cov_formatted <- as.data.frame(cov_matrix_a) %>%
+  mutate(across(everything(), ~ sprintf("**%s**", format_spaced_6dp(.))))
+rownames(cov_formatted) <- paste0("**", rownames(cov_matrix_a), "**")
+
+kable(
+  cov_formatted, 
+  format = "markdown", 
+  align = c(rep("r", ncol(cor_formatted))) 
+)
+```
+### Annualised standard deviations {-}
+
+```{r, echo=FALSE}
+sd_table <- data.frame(
+  Stock = names(sd_a),
+  `Annual Volatility` = sprintf("**%.2f%%**", sd_a * 100)
+)
+kable(
+  sd_table,
+  format = "markdown",
+  align = c("l", "c"),
+  col.names = c("Stock", "Standard deviation (annualised)")
+)
 ```
 
-Standard-deviation
-```{r Q2a_1, echo=FALSE}
-vol <- sqrt(diag(cov_matrix_a))
-vol
+### Correlation coefficient matrix {-}
+
+*Note: the correlation coefficient is not used in the efficient frontier
+calculation. We include it here for posterity.*
+
+```{r, echo=FALSE}
+cor_matrix_a <- cor(df_returns %>% select(-Date))
+
+cor_formatted <- as.data.frame(cor_matrix_a) %>%
+  mutate(across(everything(), ~ sprintf("**%s**", format_spaced_6dp(.))))
+rownames(cor_formatted) <- paste0("**", rownames(cor_matrix_a), "**")
+
+kable(
+  cor_formatted, 
+  format = "markdown", 
+  align = c(rep("r", ncol(cor_formatted)))
+)
 ```
-
-Correlation
-
-```{r Q2a_2, echo=FALSE}
-corr <- cor(R_pct)
-corr
-```
-
-<!-- Skewness -->
-<!-- ```{r Q2a_3, echo=FALSE} -->
-
-<!-- library(e1071) -->
-<!-- skew <- apply( -->
-<!--   R_pct, -->
-<!--   2, -->
-<!--   function(x) skewness(x, na.rm = TRUE, type = 3) -->
-<!-- ) -->
-
-<!-- round(skew, 6) -->
-<!-- ``` -->
-
-<!-- Answer:  -->
-
-<!-- Daily return  -->
-
-<!-- `r sprintf("%s %.5f",colnames(ret1)[2], mean_returns_d[1])`% (5dp) -->
-<!-- `r sprintf("%s %.5f",colnames(ret1)[3], mean_returns_d[2])`% (5dp) -->
-<!-- `r sprintf("%s %.5f",colnames(ret1)[4], mean_returns_d[3])`% (5dp) -->
-<!-- `r sprintf("%s %.5f",colnames(ret1)[5], mean_returns_d[4])`% (5dp) -->
-<!-- `r sprintf("%s %.5f",colnames(ret1)[6], mean_returns_d[5])`% (5dp) -->
-<!-- \\ -->
-
-<!-- `r sprintf("%s %.3f",colnames(ret1)[2], mean_returns_a[1]*100)`% (3dp) -->
-<!-- `r sprintf("%s %.3f",colnames(ret1)[3], mean_returns_a[2]*100)`% (3dp) -->
-<!-- `r sprintf("%s %.3f",colnames(ret1)[4], mean_returns_a[3]*100)`% (3dp) -->
-<!-- `r sprintf("%s %.3f",colnames(ret1)[5], mean_returns_a[4]*100)`% (3dp) -->
-<!-- `r sprintf("%s %.3f",colnames(ret1)[6], mean_returns_a[5]*100)`% (3dp) -->
-
-<!-- # ```{r, echo=FALSE} -->
-<!-- # df <- data.frame( -->
-<!-- #   Stock = stocks, -->
-<!-- #   # Format: "12.345% (3dp)" -->
-<!-- #   Return = sprintf("%.3f (3dp)", mean_returns_a * 100)  -->
-<!-- # ) -->
-<!-- #  -->
-<!-- # kable(df,  -->
-<!-- #       col.names = c("Stock", "Mean Return perc. (3dp)"),  -->
-<!-- #       caption = "Answer: Portfolio Returns", -->
-<!-- #       booktabs = TRUE, -->
-<!-- #       escape = FALSE, -->
-<!-- #       align = "lc", -->
-<!-- # ) %>% -->
-<!-- #   kable_styling( -->
-<!-- #     full_width = FALSE, -->
-<!-- #     position = "center", -->
-<!-- #     latex_options = "hold_position" -->
-<!-- #   ) -->
-<!-- # ``` -->
-
-
-
 
 ```{=latex}
 \newpage
