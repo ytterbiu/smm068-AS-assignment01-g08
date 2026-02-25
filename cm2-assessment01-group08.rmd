@@ -114,18 +114,15 @@ cat("\014") # Clean console
 #------------------- Load dependencies / external libraries -------------------#
 library(quantmod) # for downloading
 
+library(tidyverse) # loads dplyr, tidyr, ggplot2, purrr (& others)
 library(kableExtra) # for general tables
 library(DT) # for HTML interactive data tables
-library(ggplot2) # for plotting
+# library(ggplot2) # for plotting
 library(patchwork) # for combining multiple plots into one figure
 library(plotly) # for interactive html plots
 
-library(dplyr) # wrangle data for reporting
-library(tidyr) # reshape data for reporting
-
-# BE note: not sure if we will need xts or zoo, but have left in for now
-library(xts) # for downloading / financial data analysis (used in CS1)
-library(zoo) # for downloading / financial data analysis (used in CS1)
+# library(dplyr) # wrangle data for reporting
+# library(tidyr) # reshape data for reporting
 
 # BS note : for Q2
 library(rootSolve) # This finds roots of (fairly straightforward) equations
@@ -2121,9 +2118,6 @@ based upon values previously used in the literature
 [@Clare201606; @Owadally202151].
 
 ```{r exact-utility-table, echo=FALSE, warning=FALSE, message=FALSE}
-# BE note: move up if we keep this section
-library(tidyverse)
-
 # 1. PDF for Asset 2 (Needed for integration)
 pdf_r2 <- function(x) {
   r2_p1 * dnorm(x, r2_mu1, r2_sd1) + r2_p2 * dnorm(x, r2_mu2, r2_sd2)
