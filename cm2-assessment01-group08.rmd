@@ -598,7 +598,7 @@ rownames(cov_formatted) <- paste0("**", rownames(cov_matrix_a), "**")
 kable(
   cov_formatted, 
   format = "markdown", 
-  align = c(rep("r", ncol(cor_formatted))) 
+  align = c(rep("r", ncol(cov_formatted))) 
 )
 ```
 ### Annualised standard deviations {-}
@@ -635,34 +635,26 @@ kable(
 )
 ```
 
-```{=latex}
-\newpage
-```
+<!-- ```{=latex} -->
+<!-- \newpage -->
+<!-- ``` -->
 
-## Q2b {#qtwob}
+## Efficient frontier formed by investing in the 5 stocks {#qtwob}
 
-We attempt to find portfolio weights $w$ that minimise the portfolio variance while yielding the target mean return $E$,
-
-i.e. a solution to the following optimisation problem:
-
+To find portfolio weights $w$ that minimise the portfolio variance while 
+yielding the target mean return $E$ invovles solving the following optimisation 
+problem:
 <!-- prettier-ignore -->
 \begin{align*}
 \min &\quad {w}^T {D} {w} \\
 \text{s.t.} &\quad {1}^T {w} = 1 \\
   &\quad \overline{{R}}^T {w} = E \\
-  &\quad {w} \geq {0}
+  &\quad {w} \geq {0} \quad \text{(No short selling)}
 \end{align*}
 
-We are using `solve.QP` function to solve a quadratic programming problem of the form:
-
-<!-- prettier-ignore -->
-\begin{align*}
-\min &\quad \frac{1}{2}{w}^T {D} {w} - {d}^T {w} \\
-\text{s.t.} &\quad {A}^T {w} \geq {b_0}
-\end{align*}
-
-
-We therefore set:
+The `solve.QP` function was used in `R` to solve this quadratic programming
+problem, structuring our constraints into matrices accordingly. We therefore
+set:
 
 $$
 {d} = {0}, 
@@ -681,249 +673,112 @@ $$
   {0}_5 \\
 \end{bmatrix}
 $$
-
 as arguments to the `solve.QP` function.
 
-```{r Q2b-working-Ardi, fig.pos="!ht"}
+```{r Q2b, eval=TRUE, echo=FALSE, fig.cap="Mean-variance efficient frontier assuming no short selling for the five stocks described in Q1 based upon data from 2023-2025. The bold green line represents the efficient frontier, containing portfolios that offer the highest expected return for a given level of risk. The dashed grey line shows inefficient portfolios, which have lower returns for the same amount of risk. The global minimum variance portfolio is highlighted."} 
+# ==============================================================================
+# Q2(b) Calculate and plot the efficient frontier
+# ==============================================================================
+n_sec <- length(mean_returns_a)
 
-n_sec <- length(stocks)
-
-# matrix D is the stocks' covariance matrix
+# Define quadratic programming inputs
 Dmat <- cov_matrix_a
-
-# dvec is a (5x1) vector of 0's
 dvec <- rep(0, n_sec)
 
-# Sum of weights = 1 constraint
-ct_1_lhs <- rep(1, n_sec)
-ct_1_rhs <- 1
+# Define constraints: 
+# > Sum of weights = 1, 
+# > Target Return = E, 
+# > no short selling
+Amat <- cbind(rep(1, n_sec), mean_returns_a, diag(n_sec))
 
-# Target portfolio constraint
-ct_2_lhs <- mean_returns_a
+# Generate expected asset returns from the minimum to maximum 
+targets <- seq(min(mean_returns_a), max(mean_returns_a), length.out = 500)
 
-# vector of target returns
-targets <- seq(min(mean_returns_a), max(mean_returns_a), length.out = 200)
-
-res <- lapply(targets, function(tar) {
+# Calculate optimal portfolios for each target return
+eff_frontier <- map_dfr(targets, function(tar) {
+  b0vec <- c(1, tar, rep(0, n_sec))
   
-  Amat <- cbind(ct_1_lhs, ct_2_lhs, diag(n_sec))
-  b0vec <- c(ct_1_rhs, tar, rep(0, n_sec))
-
   sol <- tryCatch(
     solve.QP(Dmat, dvec, Amat, b0vec, meq = 2),
     error = function(e) NULL
   )
-  if (is.null(sol)) {
-    return(NULL)
-  }
-
-  w <- sol$solution
-  w[w < 1e-10] <- 0
-  w <- w / sum(w)
-
-  c(
-    risk = sqrt(t(w) %*% cov_matrix_a %*% w),
-    ret = sum(w * mean_returns_a)
-  )
   
-})
-
-res <- do.call(rbind, res)
-
-
-plot(
-  res[, "risk"],
-  res[, "ret"],
-  type = "l",
-  col = "red",
-  lwd = 1,
-  xlab = "Mean-Var target Risk",
-  ylab = "Expected Return",
-  xlim = range(res[, "risk"]) * c(0.98, 1.02),
-  ylim = range(mean_returns_a) * c(0.9, 1.1),
-  main = "Efficient Frontier (No short selling)"
-)
-grid()
-i_gmv <- which.min(res[, "risk"])
-
-lines(
-  res[i_gmv:nrow(res), "risk"],
-  res[i_gmv:nrow(res), "ret"],
-  col = "darkgreen",
-  lwd = 2
-)
-
-asset_cols <- c("red", "blue", "orange", "purple", "brown")
-points(
-  sqrt(diag(cov_matrix_a)),
-  mean_returns_a,
-  pch = 16,
-  cex = 1.3,
-  col = asset_cols
-)
-
-text(
-  sqrt(diag(cov_matrix_a)),
-  mean_returns_a,
-  labels = names(mean_returns_a),
-  pos = 4,
-  cex = 0.9,
-  col = asset_cols
-)
-
-
-```
-
-
-```{r Q2b-working-Bongsu, eval=FALSE, include=FALSE}
-# ==============================================================================
-# Q2(b) estimate all required statistics for the 5 stocks
-# ==============================================================================
-# method log return
-# ==============================================================================
-
-# number of securities
-n_sec <- ncol(cov_matrix_a)
-
-# Budget constraint
-ct_1_lhs <- rep(1, n_sec)
-ct_1_rhs <- 1
-
-#  Target return constraint: x_1 mu_1 + x_2 mu_2 + x_3 mu_3 + x_4 mu_4
-#                            + x_5 mu_5= mu_target <=> mu^T x = mu_target
-
-ct_2_lhs <- mean_returns_a
-ct_2_rhs <- mean(mean_returns_a)
-
-#  Optimization. There is one constraint: the budget constraint
-
-dmat <- cov_matrix_a
-
-# dvec is a column vector of 0's
-dvec <- cbind(rep(0, n_sec))
-amat <- rbind(ct_1_lhs, diag(n_sec)) # Creates a row vector
-bvec <- c(ct_1_rhs, rep(0, n_sec))
-meq <- 1 # One equality constraint
-
-# Solve for global min var portfolio. t() is the transpose function
-pf_gbl <- solve.QP(dmat, dvec, t(amat), bvec, meq)
-pf_gbl$solution
-
-# Optimization. There are two constraints:
-# budget constraint and target expected return constraint
-amat <- rbind(ct_1_lhs, ct_2_lhs, diag(n_sec))
-bvec <- c(ct_1_rhs, ct_2_rhs, rep(0, n_sec))
-meq <- 2 # Two equality constraints
-# Solve for required portfolio. t() is the transpose function
-pf_mvf <- solve.QP(dmat, dvec, t(amat), bvec, meq)
-# State the required portfolio
-pf_mvf$solution
-
-# target
-targets <- seq(min(mean_returns_a), max(mean_returns_a), length.out = 200)
-
-# BE note: want to understand this function
-res <- lapply(targets, function(tar) {
-  amat <- rbind(ct_1_lhs, ct_2_lhs, diag(N_return))
-  bvec <- c(ct_1_rhs, tar, rep(0, N_return))
-
-  sol <- tryCatch(
-    solve.QP(dmat, dvec, t(amat), bvec, meq = 2),
-    error = function(e) NULL
-  )
-  if (is.null(sol)) {
-    return(NULL)
-  }
-
+  if (is.null(sol)) return(NULL)
+  
   w <- sol$solution
-  w[w < 1e-10] <- 0
+  w[w < 1e-10] <- 0 # Clean up floating point inaccuracies
   w <- w / sum(w)
-
-  c(
-    risk = sqrt(t(w) %*% cov_matrix_a %*% w),
-    ret = sum(w * mean_returns_a)
+  
+  tibble(
+    Risk = sqrt(as.numeric(t(w) %*% cov_matrix_a %*% w)),
+    Return = sum(w * mean_returns_a)
   )
 })
 
-res <- do.call(rbind, res)
+# Identify Global Minimum Variance (GMV) portfolio
+gmv_idx <- which.min(eff_frontier$Risk)
+efficient_segment <- eff_frontier[gmv_idx:nrow(eff_frontier), ]
+inefficient_segment <- eff_frontier[1:gmv_idx, ]
+# Get global minimal point
+gmv_point <- eff_frontier[gmv_idx, ]
 
-# clean weights
-w_opt <- pf_mvf$solution
-w_opt[w_opt < 1e-10] <- 0
-w_opt <- w_opt / sum(w_opt)
-
-# optimal portfolio coordinates
-opt_mean <- sum(w_opt * mean_returns_a)
-opt_sd <- sqrt(drop(t(w_opt) %*% cov_matrix_a %*% w_opt))
-
-# plot
-plot(
-  sqrt(diag(cov_matrix_a)),
-  mean_returns_a,
-  pch = 1,
-  cex = 1.2,
-  xlab = "StdDev",
-  ylab = "mean",
-  main = "Mean Variance Portfolio",
-  xlim = range(sqrt(diag(cov_matrix_a))) * c(0.9, 1.1),
-  ylim = range(mean_returns_a) * c(0.9, 1.1)
+# Prepare individual asset data for plotting
+asset_points <- tibble(
+  Stock = names(mean_returns_a),
+  Risk = sd_a,
+  Return = mean_returns_a
 )
 
-# labels for assets
-text(
-  sqrt(diag(cov_matrix_a)),
-  mean_returns_a,
-  labels = names(mean_returns_a),
-  pos = 4,
-  cex = 0.9
-)
+# Plotting using ggplot2 to match Q1 aesthetic
+base_theme <- theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    legend.position = "bottom",
+    panel.grid.minor = element_blank()
+  )
 
-# optimal point (blue)
-points(opt_sd, opt_mean, pch = 16, col = "blue", cex = 1.3)
-text(opt_sd, opt_mean, labels = "Optimal", pos = 4, col = "blue")
-grid()
+pal <- RColorBrewer::brewer.pal(8, "Dark2")
+my_cols <- setNames(pal[c(1, 2, 3, 5, 4)], sort(unique(asset_points$Stock)))
 
-plot(
-  res[, "risk"],
-  res[, "ret"],
-  type = "l",
-  col = "red",
-  lwd = 1,
-  xlab = "Mean-Var target Risk",
-  ylab = "Expected Return",
-  xlim = range(res[, "risk"]) * c(0.98, 1.02),
-  main = "Efficient Frontier (No short selling)"
-)
-grid()
-i_gmv <- which.min(res[, "risk"])
-
-lines(
-  res[i_gmv:nrow(res), "risk"],
-  res[i_gmv:nrow(res), "ret"],
-  col = "darkgreen",
-  lwd = 2
-)
-asset_cols <- c("red", "blue", "orange", "purple", "brown")
-points(
-  sqrt(diag(cov_matrix_a)),
-  mean_returns_a,
-  pch = 16,
-  cex = 1.3,
-  col = asset_cols
-)
-
-text(
-  sqrt(diag(cov_matrix_a)),
-  mean_returns_a,
-  labels = names(mean_returns_a),
-  pos = 4,
-  cex = 0.9,
-  col = asset_cols
-)
-
+ggplot() +
+  # Efficient frontier (top half)
+  geom_line(data = efficient_segment, aes(x = Risk, y = Return), 
+            color = "darkgreen", linewidth = 1.2) +
+  # Bottom half of the parabola
+  geom_line(data = inefficient_segment, aes(x = Risk, y = Return), 
+            color = "grey60", linetype = "dashed", linewidth = 1) +
+  # Individual assets
+  geom_point(data = asset_points, aes(x = Risk, y = Return, color = Stock), size = 3) +
+  geom_text(data = asset_points, aes(x = Risk, y = Return, label = Stock, color = Stock), 
+            hjust = -0.3, vjust = 0.5, show.legend = FALSE) +
+  annotate("segment", 
+           x = gmv_point$Risk - 0.03, y = gmv_point$Return + 0.09, # line start
+           xend = gmv_point$Risk - 0.001, yend = gmv_point$Return, # line end
+           arrow = arrow(length = unit(0.2, "cm")), color = "black") +
+  # hard coded text location
+  annotate("text", 
+           x = gmv_point$Risk - 0.05, y = gmv_point$Return + 0.105, 
+           label = "Global minimum variance portfolio", color = "black", hjust = 0.5) +
+  scale_color_manual(values = my_cols) +
+  labs(
+    title = "Mean-variance efficient frontier (no short selling)",
+    x = "Risk (annualised standard deviation)",
+    y = "Expected return (annualised)",
+    color = "Individual Assets:"
+  ) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  coord_cartesian(xlim = c(0.01, 0.29), ylim = c(0.01, 0.40)) +
+  base_theme
 ```
+
+The mean-variance efficient frontier generated by solving this for a range of
+target returns is shown in Figure \@ref(fig:Q2b). The Global Minimum Variance
+(GMV) portfolio is marked on the frontier and represents the portfolio with the
+lowest possible risk given the no-short-selling constraint.
 
 ```{=latex}
+\clearpage
 \newpage
 ```
 
