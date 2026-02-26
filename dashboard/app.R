@@ -14,7 +14,7 @@ library(scales)
 #------------------------------------------------------------------------------
 # GLOBAL DATA SETUP (Runs ONCE when the app starts - High Efficiency)
 #------------------------------------------------------------------------------
-# Define our 15 U.S. Stocks
+# Define our 16 U.S. Stocks
 stock_choices <- sort(c(
   "MSFT",
   "AAPL",
@@ -269,7 +269,7 @@ server <- function(input, output, session) {
     max_target <- max(stats$returns) - 1e-6
 
     # Increase point density (from 500 to 2500) to smooth out flat horizontal stretches
-    targets <- seq(min_target, max_target, length.out = 5000)
+    targets <- seq(min_target, max_target, length.out = 500)
 
     eff_frontier <- map_dfr(targets, function(tar) {
       b0vec <- c(1, tar, rep(0, n_sec))
