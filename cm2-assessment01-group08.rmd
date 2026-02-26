@@ -285,7 +285,6 @@ format_spaced_6dp <- function(x) {
 # Five insurance-related stocks are chosen
 # The specific choice of stocks is flexible, as the primary objective
 
-#stocks <- sort(c("TRV", "PGR", "ALL", "CB", "AIG"))
 stocks <- sort(c("MSFT", "JNJ", "NEE", "AIG", "GS"))
 
 start_date <- as.Date("2023-01-01")
@@ -307,12 +306,11 @@ if (file.exists(cache_file)) {
     stocks,
     src = "yahoo",
     from = start_date,
-    to = end_date,
+    to = end_date + 1,
     env = data_env
   )
 
-  # Get Adjusted Prices and merge dynamically (allows for more stocks)
-  price_list <- lapply(data_env, Ad)
+  price_list <- lapply(mget(stocks, envir = data_env), Ad)
   prices_xts <- do.call(merge, price_list)
 
   prices <- data.frame(Date = index(prices_xts), coredata(prices_xts))
@@ -1836,6 +1834,30 @@ TBI -->
 
 To explore how the efficient frontier changes as one uses different stocks over
 different time periods, we created a dashboard that allows the workflow
+described in this report to be applied quickly to other stock combinations.
+
+We developed an interactive R Shiny dashboard, hosted on
+https://www.shinyapps.io/, which provides a dynamic interface for rapid
+comparative analysis. The dashboard is available via:
+
+- Link TBI
+
+Future development may include expanding the universe of available assets and
+allowing users to input dynamic Yahoo Finance tickers, though this would
+require optimising the data-fetching architecture to avoid API rate limits. 
+While the present implementation strictly mirrors the project’s core analysis 
+(a 5-asset portfolio with a no-short-selling constraint), there is also scope to
+extend this to incorporate flexible portfolio sizes and allow for short selling 
+(relaxing the constraint such that weights can be negative). 
+
+Future enhancements could integrate the Monte Carlo simulations and exact
+numerical integration for utility functions developed elsewhere in this project,
+and allow users to select different aggregation frequencies (for example, weekly
+or monthly returns) within the app.
+
+
+To explore how the efficient frontier changes as one uses different stocks over
+different time periods, we created a dashboard that allows the workflow
 described in this report to be applied quickly to other stock market indices.
 
 We developed an interactive R Shiny dashboard, hosted on
@@ -1865,17 +1887,6 @@ comparative analysis. The dashboard is available via:
 <!-- (6) Analysis Tabs, which display the cleaned data, normality tests, and -->
 <!-- independence diagnostics. -->
 
-Future development may include support for multiple exclusion windows and
-optimisation of the bootstrapping algorithm, which is currently
-resource-intensive for large numbers of repetitions. While the present
-implementation mirrors the project’s core analysis, there is also scope to
-extend this to incorporate additional methods, such as assessing normality using
-bootstrapped kurtosis estimates and adding functionality to vary the m value in
-the m-out-of-n bootstrap (currently hard coded as m=13). In addition to the
-adjusted closing price used in this project, future enhancements could also
-allow users to select alternative price series (for example, open, close, or
-intraday mid prices) and different aggregation frequencies (for example, daily
-or weekly) within the app.
 
 ```{=latex}
 \clearpage
