@@ -46,7 +46,8 @@ This R Markdown document was created as part of a group assignment for SMM068 at
 ```
 
 ```{r asthetic-header, include=FALSE, echo=FALSE}
-# ==============================================================================
+# ============================================================================ #
+# Key Information ====
 # SMM068 Financial Economics (Subject CM2)
 # Group Coursework 2025-26
 # Group:        Group 08
@@ -57,20 +58,34 @@ This R Markdown document was created as part of a group assignment for SMM068 at
 #   - Ardi Wira Sudarmo
 # Professor:    Dr. Iqbal Owadally
 # Institution:  Bayes Business School - City St George's, University of London
-# Date:         TBC~
+# Date:         27 Feb 2026
+#
 # Description:  Term 2 group project for SMM068 Financial Economics
-# (50% of coursework grade - 10% of module grade). The R code below
-# has been exported directly from an R Markdown (.rmd) file.  Hence the knitr
-# settings.
+#               (50% of coursework grade - 10% of module grade). The R code
+#               below has been exported directly from an R Markdown (.rmd) file.
+#               Hence the knitr settings.
+#
 # Dependencies:
-#   - TBI
+#   - quantmod: for downloading
+#   - tidyverse: loads dplyr, tidyr, ggplot2, purrr (& others)
+#   - scales: to express portfolio weights as percentage
+#   - patchwork: for combining multiple plots into one figure
+#   - rootSolve:finds roots of (fairly straightforward) equations
+#   - optimx: handles non-linear unconstrained optimisation (& box-constrained)
+#   - quadprog: to solve a quadratic programming problem
+#   - kableExtra: for general tables
+#   - DT: for HTML interactive data tables
+#   - plotly: for interactive html plots
+#   - pander: for writing to pandoc
+#
 # Acknowledgements
-#   - TBI
-# ==============================================================================
-
+#   - Bodie et al., 2024, chapters 5-8 were used as a primary source for the
+#     concepts coded here (in addition to the lecture notes)
+# ============================================================================ #
 ```
 
 ```{r setup-knitr, include=FALSE, echo=FALSE}
+# Setup & configuration ====
 #----------------------- Initial setup (knitr settings) -----------------------#
 dir.create("fig", showWarnings = FALSE)
 
@@ -112,26 +127,24 @@ cat("\014") # Clean console
 
 ```{r load-dependencies, include=FALSE, echo=FALSE}
 #------------------- Load dependencies / external libraries -------------------#
+# --- Data Fetching ---
 library(quantmod) # for downloading
 
+# --- Data Manipulation & Plotting ---
 library(tidyverse) # loads dplyr, tidyr, ggplot2, purrr (& others)
-library(kableExtra) # for general tables
-library(DT) # for HTML interactive data tables
-# library(ggplot2) # for plotting
+library(scales) # to express portfolio weights as percentage
 library(patchwork) # for combining multiple plots into one figure
-library(plotly) # for interactive html plots
 
-# library(dplyr) # wrangle data for reporting
-# library(tidyr) # reshape data for reporting
-
-# BS note : for Q2
+# --- Optimisation & Maths (Q2) ---
 library(rootSolve) # This finds roots of (fairly straightforward) equations
 library(optimx)   #  This handles non-linear unconstrained optimization (as well as box-constrained).
 library(quadprog) # to solve a quadratic programming problem
-library(scales) # to express portfolio weights as percentage
-library(pander)
 
-
+# --- Reporting & Tables ---
+library(kableExtra) # for general tables
+library(DT) # for HTML interactive data tables
+library(plotly) # for interactive html plots
+library(pander) # for writing to pandoc
 ```
 
 ```{r html-app, echo=FALSE, results='asis', eval=knitr::is_html_output(), purl=FALSE}
@@ -140,8 +153,8 @@ library(htmltools)
 
 div(style = "background-color: #f8f9fa; padding: 20px; border: 1px solid #e9ecef; border-radius: 5px; text-align: center; margin-bottom: 30px;",
   h3("Bonus Interactive Dashboard Available"),
-  p("This static report is accompanied by a live R Shiny dashboard allowing one to test different tickers, exclude specific outlier periods, and adjust bootstrap simulation parameters."),
-  a(href = "https://3enji.shinyapps.io/SMM047-202526-Group07-Dashboard/",
+  p("This static report is accompanied by a live R Shiny dashboard allowing one to use a selection of 16 US stocks in different 5 portfolio combinations."),
+  a(href = "https://3enji.shinyapps.io/smm068-a01-g08-dashboard/",
     target = "_blank",
     class = "btn btn-primary",
     style = "background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;",
@@ -274,14 +287,13 @@ format_spaced_6dp <- function(x) {
 }
 ```
 
-# Downloading the data
+# Downloading the data {#qone}
 
 ```{r Q1, echo=knitr::is_html_output(), include=FALSE}
 # ==============================================================================
 # Q1 5 Stocks in U.S market
 # ==============================================================================
 
-# R code goes here
 # Five insurance-related stocks are chosen
 # The specific choice of stocks is flexible, as the primary objective
 
@@ -293,7 +305,7 @@ end_date <- as.Date("2025-12-31")
 cache_file <- paste0("cache_", paste(stocks, collapse = "_"), ".rds")
 
 # Download only if file doesn't exist (avoiding throttling by Yahoo Finance).
-# Without this code the stocks data are downloaded fresh every time wecompile
+# Without this code the stocks data are downloaded fresh every time we compile
 # the document (because we are using RMarkdown)
 if (file.exists(cache_file)) {
   message("Loading from RDS cache...")
@@ -496,7 +508,7 @@ if (knitr::is_html_output()) {
 \newpage
 ```
 
-# Portfolio optimisation
+# Portfolio optimisation {#qtwo}
 
 Note: Average daily returns were converted to annualised units and a standard 
 252 trading day multiplier was chosen for consistency 
@@ -1627,7 +1639,7 @@ plot_df <- tibble(
   diff_cdf = cdf_r2 - cdf_r1
 )
 
-# --- consistent colours + styles (match your Q3-part-e-ggplot approach)
+# consistent colours + styles (matches Q3e ggplot)
 pal <- RColorBrewer::brewer.pal(8, "Dark2")
 asset_levels <- c("R1", "R2")
 my_cols <- setNames(pal[seq_along(asset_levels)], asset_levels)
@@ -1643,7 +1655,8 @@ base_theme <- theme_bw() +
     legend.title = element_blank()
   )
 
-# --- crossover points where CDFs are equal (diff_cdf = 0), via sign changes + linear interpolation
+# crossover points where CDFs are equal (diff_cdf = 0), 
+# via sign changes + linear interpolation
 d <- plot_df$diff_cdf
 x <- plot_df$x
 idx <- which(d[-1] * d[-length(d)] <= 0)
@@ -1832,61 +1845,50 @@ TBI -->
 
 # Bonus exploration: R Shiny dashboard {#apd-dashboard}
 
-To explore how the efficient frontier changes as one uses different stocks over
-different time periods, we created a dashboard that allows the workflow
-described in this report to be applied quickly to other stock combinations.
+To explore this project further (and in an optimistic pursuit of extra credit)
+we constructed an app to allow for an additional exploration of the work
+described in \@ref(qone) & \@ref(qtwo) using different portfolios.
 
-We developed an interactive R Shiny dashboard, hosted on
-https://www.shinyapps.io/, which provides a dynamic interface for rapid
-comparative analysis. The dashboard is available via:
+As R Markdown was used to write up this project, one natural approach would have
+been simply to update the five stocks and render a new R Markdown document for
+each portfolio. While this would work in principle, it is not fully
+satisfactory: the document takes time to render and each iteration would require
+manual narrative adjustments. To address this, we developed an interactive R
+Shiny dashboard, hosted on https://www.shinyapps.io/, which provides a dynamic
+interface for the construction of a portfolio under the framework described in
+this report. The dashboard is available via:
 
-- Link TBI
+- https://3enji.shinyapps.io/smm068-a01-g08-dashboard/
 
-Future development may include expanding the universe of available assets and
-allowing users to input dynamic Yahoo Finance tickers, though this would
-require optimising the data-fetching architecture to avoid API rate limits. 
-While the present implementation strictly mirrors the project’s core analysis 
-(a 5-asset portfolio with a no-short-selling constraint), there is also scope to
-extend this to incorporate flexible portfolio sizes and allow for short selling 
-(relaxing the constraint such that weights can be negative). 
+Figure \@ref(fig:appendix-dashboard-1) shows the dashboard start page. Currently
+sixteen US stocks are available to select, along with the range of dates one
+wishes to use to obtain the stock statistics. The `plotly` library is used to
+allow interactivity for both stock performance figures. 
 
-Future enhancements could integrate the Monte Carlo simulations and exact
-numerical integration for utility functions developed elsewhere in this project,
-and allow users to select different aggregation frequencies (for example, weekly
-or monthly returns) within the app.
+```{r appendix-dashboard-1, echo=FALSE, purl=FALSE, out.width="70%", fig.cap="The R Shiny dashboard start page. A selection of stocks are downloaded when the app is first loaded to avoid repeated API requests and throttling restrictions."}
+knitr::include_graphics("fig/appendix-dashboard-1.png")
+```
 
+The statistics tab (not shown here) mirrors \@ref(qtwoa), showing the expected
+returns, standard deviation and the covariance matrix for selected securities.
 
-To explore how the efficient frontier changes as one uses different stocks over
-different time periods, we created a dashboard that allows the workflow
-described in this report to be applied quickly to other stock market indices.
+```{r appendix-dashboard-2, echo=FALSE, purl=FALSE, out.width="100%", fig.cap=" The Efficient Frontier tab in the R Shiny dashboard showing the portfolio weights associated with a given portfolio on the efficient frontier, along with the expected return and risk. The subjective risk tolerance can change using a slider from 0 to 100, updating both the metrics, portfolio weights, and the visual representation showing the location of the portfolio on the efficient frontier."}
+knitr::include_graphics("fig/appendix-dashboard-2.png")
+```
 
-We developed an interactive R Shiny dashboard, hosted on
-https://www.shinyapps.io/, which provides a dynamic interface for rapid
-comparative analysis. The dashboard is available via:
+The interactive efficient frontier element of the app is shown in Figure \@ref(fig:appendix-dashboard-2).  The risk tolerance slider represents the
+amount of risk an investor is willing to accept in nominal units of 0 to 100. 
+Changing this slider automatically updates the portfolio weights, the risk and
+expected return, and the location of the portfolio on the efficient frontier.
 
-- Link TBI
-
-<!-- Figure \@ref(fig:appendixdashboard1) shows the dashboard start page. Clicking -->
-<!-- Run Analysis loads information for the entered Yahoo Finance ticker (with the -->
-<!-- default set to `^IXIC`). -->
-
-<!-- # ```{r appendixdashboard1, echo=FALSE, purl=FALSE, out.width="70%", fig.cap="The R Shiny dashboard start page. Clicking ‘Run Analysis’ will load information for the entered Yahoo Finance ticker."} -->
-<!-- # knitr::include_graphics("fig/appendix-dashboard-1.pdf") -->
-<!-- # ``` -->
-<!-- #  -->
-<!-- # ```{r appendixdashboard2, echo=FALSE, purl=FALSE, out.width="100%", fig.cap="Annotated interface of the R Shiny dashboard, highlighting key features such as flexible evaluation windows, the ability to exclude a specific outlier region, and view various elements of the project shown in different tabs. These elements are numbered here and described in the text."} -->
-<!-- # knitr::include_graphics("fig/appendix-dashboard-2.pdf") -->
-<!-- # ``` -->
-
-<!-- Figure \@ref(fig:appendixdashboard2) presents an annotated view of the user -->
-<!-- interface. The dashboard includes (1) a Ticker Selection field that accepts -->
-<!-- standard Yahoo Finance symbols; (2–4) Data Cleaning controls, where users can -->
-<!-- define the study range and mask a specific outlier period (2020-02-24 to -->
-<!-- 2020-03-23 in the case of our report); (5) Bootstrap Settings, allowing users to -->
-<!-- choose the number of repetitions (to balance accuracy and computation time); and -->
-<!-- (6) Analysis Tabs, which display the cleaned data, normality tests, and -->
-<!-- independence diagnostics. -->
-
+Future development of this app could expand upon the present implementation
+which strictly mirrors the project’s core analysis (a 5-asset portfolio with a
+no-short-selling constraint). The more alluring areas to develop are
+incorporating flexible portfolio sizes, allowing for short selling in the model,
+and including the option to select and use a risk-free asset in the portfolio.
+Future development could also expand the universe of available assets and allow
+users to input dynamic Yahoo Finance tickers, though this would require
+optimising the data-fetching architecture to avoid API rate limits.
 
 ```{=latex}
 \clearpage
@@ -1924,7 +1926,7 @@ As shown in Figure \@ref(fig:excel-about), this sheet contains:
 
 ### Q1 sheet: raw adjusted close prices {#app:q1}
 
-```{r excel-q1, echo=FALSE, fig.cap="Overview of sheet Q1.", out.width="80%", fig.pos="!ht"}
+```{r excel-q1, echo=FALSE, fig.cap="Overview of sheet Q1.", out.width="85%", fig.pos="!ht"}
 knitr::include_graphics("fig/appendix-excel-q1.png")
 ```
 
@@ -2046,11 +2048,11 @@ Sub EfficientFrontier_Run()
     
     For r = 10 To 209
         
-        targetCell = "$R$" & r
-        changeCells = "$K$" & r & ":$O$" & r
-        sumCell = "$P$" & r
-        portRetCell = "$Q$" & r
-        targetRetCell = "$J$" & r
+        targetCell = "$s$" & r
+        changeCells = "$l$" & r & ":$p$" & r
+        sumCell = "$q$" & r
+        portRetCell = "$r$" & r
+        targetRetCell = "$k$" & r
        
         Range(changeCells).ClearContents
         Application.Run "Solver.xlam!SolverReset"
@@ -2086,7 +2088,7 @@ Dim r As Long, c As Long
 Sub InitRandomWeights()
     Randomize 123   'set.seed 123
     For r = 10 To 5004
-        For c = Range("V1").Column To Range("Z1").Column
+        For c = Range("w1").Column To Range("aa1").Column
             Cells(r, c).Value = Rnd
         Next c
     Next r
