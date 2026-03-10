@@ -24,6 +24,7 @@ a_submission-docs/
 *.ppt*
 *.dfc*
 *.svg
+*.mp4
 
 # files
 *.fdb_latexmk
